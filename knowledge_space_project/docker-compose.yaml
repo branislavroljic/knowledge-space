@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - 6000:5432
+    environment:
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: ${PGDATABASE}
+    volumes:
+      - ks-api-data:/var/lib/postgresql/data
+  admin:
+    image: adminer
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 9002:8080
+
+volumes:
+  ks-api-data:
