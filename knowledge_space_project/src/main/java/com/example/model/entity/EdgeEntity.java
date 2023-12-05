@@ -16,13 +16,13 @@ public class EdgeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Integer id;
 
   @ManyToOne
-  @JoinColumn(name = "from_item_id")
-  private ProblemEntity fromItem;
+  @JoinColumn(name = "source_id")
+  private ProblemEntity sourceProblem;
 
   @ManyToOne
-  @JoinColumn(name = "to_item_id")
-  private ProblemEntity toItem;
+  @JoinColumn(name = "destination_id")
+  private ProblemEntity destinationProblem;
 }

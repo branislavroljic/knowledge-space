@@ -1,2 +1,5 @@
-package com.example.model.request.auth;public class UserAnswersRequest {
+package com.example.model.request;
+
+public class UserAnswersRequest {
+
 }

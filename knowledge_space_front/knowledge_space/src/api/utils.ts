@@ -18,7 +18,13 @@ export function put(url: string | URL, body: string) {
   });
 }
 
-export function del(baseUrl: string | URL, id: number) {
+export function del(url: string | URL, params?: any) {
+  return axiosClient.delete(url.toString(), {
+    params: params,
+  });
+}
+
+export function delById(baseUrl: string | URL, id: number) {
   return axiosClient.delete(new URL(id.toString(), baseUrl).toString());
 }
 

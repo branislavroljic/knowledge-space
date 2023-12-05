@@ -1,5 +1,6 @@
 package com.example.model.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,9 +17,15 @@ public class ProblemEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Integer id;
 
   private String name;
+
+  @Column(name = "positionX")
+  private Double positionX;
+
+  @Column(name = "positionY")
+  private Double positionY;
 
   @ManyToOne
   @JoinColumn(name = "knowledge_space_id")

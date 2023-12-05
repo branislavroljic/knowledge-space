@@ -8,4 +8,5 @@ import lombok.Data;
 public class AssessmentTest {
   private Integer id;
   private String name;
+  private boolean isCompleted;
 }

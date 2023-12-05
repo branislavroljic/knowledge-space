@@ -61,16 +61,16 @@ CREATE TABLE IF NOT EXISTS public.assessment_test
 -- Create Edge Table
 CREATE TABLE IF NOT EXISTS public.edge
 (
-    id           serial primary key,
-    from_item_id INT NOT NULL,
-    to_item_id   INT NOT NULL,
-    CONSTRAINT fk_edge_problem_from
-        FOREIGN KEY (from_item_id)
+    id             serial primary key,
+    source_id      INT NOT NULL,
+    destination_id INT NOT NULL,
+    CONSTRAINT fk_edge_problem_source
+        FOREIGN KEY (source_id)
             REFERENCES public.problem (id)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION,
-    CONSTRAINT fk_edge_problem_to
-        FOREIGN KEY (to_item_id)
+    CONSTRAINT fk_edge_problem_destination
+        FOREIGN KEY (destination_id)
             REFERENCES public.problem (id)
             ON DELETE NO ACTION
             ON UPDATE NO ACTION
