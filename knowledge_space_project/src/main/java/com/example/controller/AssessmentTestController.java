@@ -3,6 +3,8 @@ package com.example.controller;
 import com.example.model.dto.AssessmentTest;
 import com.example.model.dto.Question;
 import com.example.model.dto.Response;
+import com.example.model.request.UserAnswerRequest;
+import com.example.model.response.auth.UserTestResults;
 import com.example.security.JwtUser;
 import com.example.service.AssessmentTestService;
 import java.util.List;
@@ -12,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,6 +36,12 @@ public class AssessmentTestController {
     return ResponseEntity.ok(assessmentTestService.getAssessmentTestQuestions(id));
   }
 
-//  @PostMapping
-//  public Response<Void> saveUserAnswers()
+  @PostMapping("/{id}")
+  public ResponseEntity<UserTestResults> submitAssessmentTest(
+      @PathVariable Integer id,
+      @AuthenticationPrincipal JwtUser loggedInUser,
+      @RequestBody List<UserAnswerRequest> answers) {
+    ;
+    return ResponseEntity.ok(assessmentTestService.submitAssessmentTest(id, loggedInUser, answers));
+  }
 }

@@ -44,7 +44,7 @@ export default function AssessmentTestTable() {
         color="primary"
         onClick={(e) => {
           navigate("/assessment_tests/" + item.id + "/questions", {
-            state: item,
+            state: { assessmentTest: item },
           });
           e.stopPropagation();
         }}

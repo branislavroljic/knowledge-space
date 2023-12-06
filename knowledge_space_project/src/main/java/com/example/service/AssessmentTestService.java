@@ -7,9 +7,18 @@ import com.example.model.dto.Question;
 import com.example.model.entity.AssessmentTestEntity;
 import com.example.model.entity.AssessmentTestQuestionEntity;
 import com.example.model.entity.QuestionEntity;
+import com.example.model.entity.ResponseEntity;
+import com.example.model.entity.UserAssessmentTestEntity;
+import com.example.model.entity.UserAssessmentTestResponseEntity;
+import com.example.model.entity.UserEntity;
 import com.example.model.exception.NotFoundException;
-import com.example.repositories.AssessmentTestRepository;
+import com.example.model.request.UserAnswerRequest;
+import com.example.model.response.auth.UserTestResults;
+import com.example.repositories.AssessmentTestEntityRepository;
+import com.example.repositories.ResponseEntityRepository;
 import com.example.repositories.UserAssessmentTestEntityRepository;
+import com.example.repositories.UserAssessmentTestResponseEntityRepository;
+import com.example.repositories.UserEntityRepository;
 import com.example.security.JwtUser;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -25,27 +34,87 @@ import org.springframework.stereotype.Service;
 public class AssessmentTestService {
 
   private final AssessmentTestMapper assessmentTestMapper;
-  private final AssessmentTestRepository assessmentTestRepository;
+  private final AssessmentTestEntityRepository assessmentTestEntityRepository;
   private final UserAssessmentTestEntityRepository userAssessmentTestEntityRepository;
+  private final ResponseEntityRepository responseEntityRepository;
+  private final UserEntityRepository userEntityRepository;
+  private final UserAssessmentTestResponseEntityRepository
+      userAssessmentTestResponseEntityRepository;
   private final QuestionMapper questionMapper;
 
   public List<AssessmentTest> getAll(JwtUser loggedInUser) {
     List<AssessmentTest> assessmentTests =
         assessmentTestMapper.mapAssessmentTestEntitiesToAssessmentTests(
-        assessmentTestRepository.findAll());
-assessmentTests.forEach(assessmentTest -> assessmentTest.setCompleted( userAssessmentTestEntityRepository.existsByUserIdAndAndAssessmentTestId(
-    loggedInUser.getId(), assessmentTest.getId())));
+            assessmentTestEntityRepository.findAll());
+    assessmentTests.forEach(
+        assessmentTest ->
+            assessmentTest.setCompleted(
+                userAssessmentTestEntityRepository.existsByUserIdAndAndAssessmentTestId(
+                    loggedInUser.getId(), assessmentTest.getId())));
     return assessmentTests;
   }
 
   public List<Question> getAssessmentTestQuestions(Integer id) {
     AssessmentTestEntity assessmentTestEntity =
-        assessmentTestRepository.findById(id).orElseThrow(NotFoundException::new);
+        assessmentTestEntityRepository.findById(id).orElseThrow(NotFoundException::new);
 
     List<QuestionEntity> questionsEntities =
         assessmentTestEntity.getQuestions().stream()
             .map(AssessmentTestQuestionEntity::getQuestion)
-            .collect(Collectors.toList());
-  return questionMapper.mapQuestionEntitiesToQuestion(questionsEntities);
+            .toList();
+    return questionMapper.mapQuestionEntitiesToQuestion(questionsEntities);
+  }
+
+  public UserTestResults submitAssessmentTest(
+      Integer assessmentTestId, JwtUser loggedInUser, List<UserAnswerRequest> answers) {
+    UserEntity userEntity = userEntityRepository.getReferenceById(loggedInUser.getId());
+    AssessmentTestEntity assessmentTestEntity =
+        assessmentTestEntityRepository
+            .findById(assessmentTestId)
+            .orElseThrow(NotFoundException::new);
+    List<ResponseEntity> responses =
+        responseEntityRepository.findAllById(
+            answers.stream().map(UserAnswerRequest::getResponseId).toList());
+
+    UserAssessmentTestEntity userAssessmentTestEntity = new UserAssessmentTestEntity();
+    userAssessmentTestEntity.setUser(userEntity);
+    userAssessmentTestEntity.setAssessmentTest(assessmentTestEntity);
+    userAssessmentTestEntity.setId(0);
+
+    userAssessmentTestEntityRepository.save(userAssessmentTestEntity);
+
+    List<UserAssessmentTestResponseEntity> userResponses =
+        responses.stream()
+            .map(
+                response -> {
+                  UserAssessmentTestResponseEntity userResponse =
+                      new UserAssessmentTestResponseEntity();
+                  userResponse.setUserAssessmentTest(userAssessmentTestEntity);
+                  userResponse.setResponse(response);
+                  userResponse.setId(0);
+                  return userResponse;
+                })
+            .toList();
+
+    userAssessmentTestResponseEntityRepository.saveAll(userResponses);
+
+    return UserTestResults.builder()
+        .total(assessmentTestEntity.getQuestions().size())
+        .correct(responses.stream().filter(ResponseEntity::isCorrect).count())
+        .build();
+  }
+
+  public void startMCQ(Integer assessmentTestId){
+    AssessmentTestEntity assessmentTestEntity =
+        assessmentTestEntityRepository.findById(assessmentTestId).orElseThrow(NotFoundException::new);
+
+    //get all nodes
+    //get all edges
+
+    //find root nodes
+
+    //get all possible paths using DFS
+
+    //
   }
 }

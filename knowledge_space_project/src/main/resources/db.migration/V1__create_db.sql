@@ -124,9 +124,9 @@ CREATE TABLE IF NOT EXISTS public.user_assessment_test
 -- Create User has Assessment Test Response Table
 CREATE TABLE IF NOT EXISTS public.user_assessment_test_response
 (
+    id                          SERIAL PRIMARY KEY,
     response_id                 INT NOT NULL,
     user_has_assessment_test_id INT NOT NULL,
-    PRIMARY KEY (response_id, user_has_assessment_test_id),
     CONSTRAINT fk_user_has_assessment_test_response_response
         FOREIGN KEY (response_id)
             REFERENCES response (id)

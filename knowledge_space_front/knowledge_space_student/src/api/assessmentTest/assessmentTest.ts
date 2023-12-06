@@ -1,4 +1,4 @@
-import { get } from "@api/utils";
+import { get, post } from "@api/utils";
 
 const baseUrl = new URL("assessment_tests", import.meta.env.VITE_API_URL);
 const baseUrlWithSlash = new URL(
@@ -10,6 +10,8 @@ export type AssessmentTest = {
   id: number;
   name: string;
   completed: boolean;
+  total? : number;
+  correct? : number;
 };
 
 export type Question = {
@@ -25,10 +27,27 @@ export type Response = {
   correct: boolean;
 };
 
+export type AssessmentTestResult = {
+  total: number;
+  correct: number;
+};
+
+export type UserAssessmentTest = {
+  assessmentTestId: number;
+  answers: number[];
+};
+
 export function getAssessmentTests(): Promise<AssessmentTest[]> {
   return get(baseUrl);
 }
 
 export function getAssessmentTestQuestions(id: number): Promise<Question[]> {
   return get(new URL("" + id, baseUrlWithSlash));
+}
+
+export function submitAssessmentTest(input: UserAssessmentTest) {
+  return post(
+    new URL("" + input.assessmentTestId, baseUrlWithSlash),
+    JSON.stringify(input.answers)
+  );
 }

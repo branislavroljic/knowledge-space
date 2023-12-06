@@ -10,7 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserAnswerRequest {
-
-  private Integer questionId;
   private Integer responseId;
 }
