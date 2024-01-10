@@ -26,8 +26,14 @@ import com.example.repositories.UserEntityRepository;
 import com.example.security.JwtUser;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -56,21 +62,21 @@ public class AssessmentTestService {
     assessmentTests.forEach(
         assessmentTest ->
             assessmentTest.setCompleted(
-                userAssessmentTestEntityRepository.existsByUserIdAndAndAssessmentTestId(
+                userAssessmentTestEntityRepository.existsByUserIdAndAssessmentTestId(
                     loggedInUser.getId(), assessmentTest.getId())));
     return assessmentTests;
   }
 
-  public List<Question> getAssessmentTestQuestions(Integer id) {
-    AssessmentTestEntity assessmentTestEntity =
-        assessmentTestEntityRepository.findById(id).orElseThrow(NotFoundException::new);
-
-    List<QuestionEntity> questionsEntities =
-        assessmentTestEntity.getQuestions().stream()
-            .map(AssessmentTestQuestionEntity::getQuestion)
-            .toList();
-    return questionMapper.mapQuestionEntitiesToQuestion(questionsEntities);
-  }
+  //  public List<Question> getAssessmentTestQuestions(Integer id) {
+  //    AssessmentTestEntity assessmentTestEntity =
+  //        assessmentTestEntityRepository.findById(id).orElseThrow(NotFoundException::new);
+  //
+  //    List<QuestionEntity> questionsEntities =
+  //        assessmentTestEntity.getQuestions().stream()
+  //            .map(AssessmentTestQuestionEntity::getQuestion)
+  //            .toList();
+  //    return questionMapper.mapQuestionEntitiesToQuestion(questionsEntities);
+  //  }
 
   public UserTestResults submitAssessmentTest(
       Integer assessmentTestId, JwtUser loggedInUser, List<UserAnswerRequest> answers) {
@@ -111,24 +117,134 @@ public class AssessmentTestService {
         .build();
   }
 
-//  public void startMCQ(Integer assessmentTestId){
-//    AssessmentTestEntity assessmentTestEntity =
-//        assessmentTestEntityRepository.findById(assessmentTestId).orElseThrow(NotFoundException::new);
-//
-//      List<ProblemEntity> nodes =
-//          problemEntityRepository.findAllByKnowledgeSpaceId(assessmentTestEntity.getKnowledgeSpace().getId());
-//      List<EdgeEntity> edges =
-//          edgeEntityRepository.findBySourceProblemInOrDestinationProblemIn(nodes, nodes);
-//      List<ProblemEntity> notRootNodes =
-//          edges.stream().map(EdgeEntity::getDestinationProblem).toList();
-//
-//     List<ProblemEntity> rootNodes =  new ArrayList<>(nodes);
-//     rootNodes.removeAll(notRootNodes);
-//
-//      List<List<ProblemEntity>> learningSpaces = BFS(rootNodes, nodes ,edges);
-//
-//
-//  }
-//
-//  private
+  public List<Question> getAssessmentTestQuestions(
+      Integer assessmentTestId, List<ProblemEntity> sortedProblems) {
+    AssessmentTestEntity assessmentTestEntity =
+        assessmentTestEntityRepository
+            .findById(assessmentTestId)
+            .orElseThrow(NotFoundException::new);
+
+    if (sortedProblems == null) {
+      List<ProblemEntity> nodes =
+          problemEntityRepository.findAllByKnowledgeSpaceId(
+              assessmentTestEntity.getKnowledgeSpace().getId());
+      List<EdgeEntity> edges =
+          edgeEntityRepository.findBySourceProblemInOrDestinationProblemIn(nodes, nodes);
+
+      Map<Integer, List<ProblemEntity>> problemLevelTree = getProblemsLevelTree(nodes, edges);
+      sortedProblems = problemLevelTree.get(0);
+    }
+    // get questions
+    List<QuestionEntity> questionEntities =
+        assessmentTestEntity.getQuestions().stream()
+            .map(AssessmentTestQuestionEntity::getQuestion)
+            .toList();
+
+    List<QuestionEntity> sortedQuestionEntities =
+        sortQuestionByProblems(questionEntities, sortedProblems);
+
+    return questionMapper.mapQuestionEntitiesToQuestion(sortedQuestionEntities);
+  }
+
+  public int[][] generateAssessmentTestMatrix(
+      Integer assessmentTestId, List<ProblemEntity> sortedProblems) {
+    AssessmentTestEntity assessmentTestEntity =
+        assessmentTestEntityRepository
+            .findById(assessmentTestId)
+            .orElseThrow(NotFoundException::new);
+    List<UserAssessmentTestEntity> userAssessmentTestEntities =
+        userAssessmentTestEntityRepository.findAllByAssessmentTest(assessmentTestEntity);
+
+    int[][] matrix =
+        new int[userAssessmentTestEntities.size()][assessmentTestEntity.getQuestions().size()];
+
+    List<Question> sortedQuestions = getAssessmentTestQuestions(assessmentTestId, sortedProblems);
+    for (int i = 0; i < userAssessmentTestEntities.size(); i++) {
+      List<ResponseEntity> responses =
+          userAssessmentTestEntities.get(i).getResponseEntities().stream()
+              .map(UserAssessmentTestResponseEntity::getResponse)
+              .toList();
+
+      responses =
+          responses.stream()
+              .sorted(
+                  Comparator.comparingInt(
+                      responseEntity -> {
+                        Question question =
+                            questionMapper.mapQuestionEntityToQuestion(
+                                responseEntity.getQuestion());
+                        // Find the index of the question in the sortedQuestions list
+                        return sortedQuestions.indexOf(question);
+                      }))
+              .toList();
+
+      for (int j = 0; j < sortedQuestions.size(); j++) {
+
+        matrix[i][j] = responses.get(j).isCorrect() ? 1 : 0;
+      }
+    }
+    return matrix;
+  }
+
+  public List<ProblemEntity> getSortedProblems(Map<Integer, List<ProblemEntity>> problemLevelTree) {
+
+    // sort generated tree
+    Set<ProblemEntity> sortedProblems = new LinkedHashSet<>();
+    List<Integer> levels = new ArrayList<>(problemLevelTree.keySet());
+    levels.sort(Collections.reverseOrder());
+
+    for (Integer level : levels) {
+      sortedProblems.addAll(problemLevelTree.get(level));
+    }
+    return new ArrayList<>(sortedProblems);
+  }
+
+  public Map<Integer, List<ProblemEntity>> getProblemsLevelTree(
+      List<ProblemEntity> problems, List<EdgeEntity> edges) {
+    Map<Integer, List<ProblemEntity>> problemLevelTree = new HashMap<>();
+
+    // find children of each problem
+    Map<Integer, List<ProblemEntity>> problemChildrenMap = new HashMap<>();
+    for (EdgeEntity edge : edges) {
+      problemChildrenMap
+          .computeIfAbsent(edge.getSourceProblem().getId(), k -> new ArrayList<>())
+          .add(edge.getDestinationProblem());
+    }
+
+    // populate the tree starting from the leaves
+    for (ProblemEntity problem : problems) {
+      traverseAndAddToTree(problem, problemLevelTree, problemChildrenMap, 0);
+    }
+    return problemLevelTree;
+  }
+
+  private void traverseAndAddToTree(
+      ProblemEntity problem,
+      Map<Integer, List<ProblemEntity>> problemLevelTree,
+      Map<Integer, List<ProblemEntity>> childrenMap,
+      int level) {
+    problemLevelTree.computeIfAbsent(level, k -> new ArrayList<>()).add(problem);
+
+    List<ProblemEntity> children = childrenMap.get(problem.getId());
+    if (children != null) {
+      for (ProblemEntity child : children) {
+        traverseAndAddToTree(child, problemLevelTree, childrenMap, level + 1);
+      }
+    }
+  }
+
+  private List<QuestionEntity> sortQuestionByProblems(
+      List<QuestionEntity> questionEntities, List<ProblemEntity> sortedProblems) {
+    Map<ProblemEntity, Integer> problemIndexMap = new HashMap<>();
+
+    for (int i = 0; i < sortedProblems.size(); i++) {
+      problemIndexMap.put(sortedProblems.get(i), i);
+    }
+
+    return questionEntities.stream()
+        .sorted(
+            Comparator.comparing(
+                q -> problemIndexMap.get(q.getProblem())))
+        .toList();
+  }
 }

@@ -1,5 +1,5 @@
 import sys
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request,jsonify, redirect
 import pandas as pd
 
 from flask_cors import CORS
@@ -28,16 +28,18 @@ def index():
 @app.route("/iita", methods=["POST"])
 def iitaEndpoint():
     request_data = request.get_json()
-    print(request_data)
+    # print(request_data)
     results = request_data
-    input = {}
-    for res in results:
-        input[res["studentId"]] = res["responses"]
+    # input = {}
+    # for res in results:
+    #     input[res["studentId"]] = res["responses"]
 
-    data_frame = pd.DataFrame(input)
+    data_frame = pd.DataFrame(results)
     response = iita(data_frame, v=1)
-    print(pd.Series(response).to_json(orient="values"))
-    return pd.Series(response).to_json(orient="values")
+    print(response['implications'])
+    # print(pd.Series(response).to_json(orient="values"))
+    # return pd.Series(response).to_json(orient="values")
+    return response['implications']
 
 
 # @app.route("/<int:id>", methods=["DELETE", "PUT"])
@@ -46,4 +48,4 @@ def iitaEndpoint():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True,host='localhost', port=5000)

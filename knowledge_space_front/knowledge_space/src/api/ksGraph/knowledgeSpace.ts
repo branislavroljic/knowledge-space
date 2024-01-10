@@ -11,9 +11,7 @@ const baseUrlWithSlash = new URL("ks/", import.meta.env.VITE_API_URL);
 
 export type KnowledgeSpace = SelectInput;
 
-export type AssessmentTest = {
-  id?: number;
-  name: string;
+export type AssessmentTest = SelectInput & {
   knowledgeSpace: string;
 };
 
@@ -30,4 +28,10 @@ export function getAssessmentTests(
       pagination
     )
   );
+}
+
+export function getAssessmentTestsForKS(
+  ksId: number
+): Promise<AssessmentTest[]> {
+  return get(new URL(ksId + "/assessment_tests", baseUrlWithSlash));
 }

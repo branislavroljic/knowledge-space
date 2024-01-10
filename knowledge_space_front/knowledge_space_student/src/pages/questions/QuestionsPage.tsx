@@ -9,7 +9,7 @@ import {
 import { Button } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import PageContainer from "@ui/container/PageContainer";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import useNotifiedMutation from "../../hooks/useNotifiedMutation";
 import Banner from "./Banner";
@@ -28,7 +28,6 @@ export function QuestionsPage() {
   const params = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
-
 
   const assessmentTestId = useMemo(
     () => (params?.assessmentTestId ? +params?.assessmentTestId : 1),
@@ -89,11 +88,15 @@ export function QuestionsPage() {
     setSelectedAnswer(undefined);
   };
 
+  useEffect(() => {
+    console.log(answers);
+  }, [currentQuestionIndex]);
+
   const handleNextButton = () => {
     setShowNextButton(false);
     if (questions && choices) {
-      setAnswers([
-        ...answers,
+      setAnswers((prevAnswers: any) => [
+        ...prevAnswers,
         {
           questionId: questions[currentQuestionIndex].id,
           responseId: choices[selectedAnswer ?? 0].id,
@@ -105,13 +108,37 @@ export function QuestionsPage() {
     if (questions && currentQuestionIndex < questions.length - 1) {
       showQuestion(currentQuestionIndex + 1);
     } else {
-      if (params?.assessmentTestId)
-        assessmentTestMutation.mutate({
-          assessmentTestId: +params?.assessmentTestId,
-          answers,
-        } as UserAssessmentTest);
+      // if (params?.assessmentTestId) {
+      //   console.log('tu sam')
+      //   assessmentTestMutation.mutate({
+      //     assessmentTestId: +params?.assessmentTestId,
+      //     answers,
+      //   } as UserAssessmentTest);
+      // }
     }
   };
+  const prevAnswersRef = useRef(answers);
+
+  useEffect(() => {
+    // Check if 'answers' has been updated and is different from the previous value
+    if (
+      answers.length > 0 &&
+      questions &&
+      currentQuestionIndex >= questions.length &&
+      params?.assessmentTestId &&
+      answers !== prevAnswersRef.current
+    ) {
+      console.log("tu sam");
+      // Trigger the mutation with the updated 'answers' array
+      assessmentTestMutation.mutate({
+        assessmentTestId: +params?.assessmentTestId,
+        answers,
+      } as UserAssessmentTest);
+
+      // Update the ref with the current 'answers' value
+      prevAnswersRef.current = answers;
+    }
+  }, [answers, params?.assessmentTestId, assessmentTestMutation]);
 
   const selectChoice = (index: number) => {
     setSelectedAnswer(index);

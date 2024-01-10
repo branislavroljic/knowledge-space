@@ -87,4 +87,17 @@ public class KnowledgeSpaceController {
       PageInfoRequest request) {
     return ResponseEntity.ok(knowledgeSpaceService.getAssessmentTests(request));
   }
+
+  @GetMapping("/{id}/assessment_tests")
+  public ResponseEntity<List<AssessmentTestProfessor>> getAssessmentTestsForKS(
+      @PathVariable Integer id) {
+    return ResponseEntity.ok(knowledgeSpaceService.getAssessmentTestsForKS(id));
+  }
+
+  @GetMapping("/real_ks/{assessment_test_id}")
+  public ResponseEntity<KnowledgeSpaceGraphData> getRealKnowledgeSpace(
+      @PathVariable Integer assessment_test_id) {
+
+    return ResponseEntity.ok(knowledgeSpaceService.getRealKnowledgeSpace(assessment_test_id));
+  }
 }

@@ -7,6 +7,7 @@ import com.example.model.request.UserAnswerRequest;
 import com.example.model.response.auth.UserTestResults;
 import com.example.security.JwtUser;
 import com.example.service.AssessmentTestService;
+import com.example.service.KnowledgeSpaceService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AssessmentTestController {
 
   private final AssessmentTestService assessmentTestService;
+  private final KnowledgeSpaceService knowledgeSpaceService;
 
   @GetMapping("/by_user")
   public ResponseEntity<List<AssessmentTest>> getAll(
@@ -33,7 +35,7 @@ public class AssessmentTestController {
 
   @GetMapping("/{id}")
   public ResponseEntity<List<Question>> getAssessmentTestQuestions(@PathVariable Integer id) {
-    return ResponseEntity.ok(assessmentTestService.getAssessmentTestQuestions(id));
+    return ResponseEntity.ok(assessmentTestService.getAssessmentTestQuestions(id, null));
   }
 
   @PostMapping("/{id}")
@@ -43,5 +45,11 @@ public class AssessmentTestController {
       @RequestBody List<UserAnswerRequest> answers) {
     ;
     return ResponseEntity.ok(assessmentTestService.submitAssessmentTest(id, loggedInUser, answers));
+  }
+
+  @GetMapping("/{id}/matrix")
+  public ResponseEntity<Void> getMatrix(@PathVariable Integer id) {
+    knowledgeSpaceService.getRealKnowledgeSpace(id);
+    return ResponseEntity.ok().build();
   }
 }

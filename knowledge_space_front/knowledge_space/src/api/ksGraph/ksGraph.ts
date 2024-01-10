@@ -36,6 +36,12 @@ export function getKsGraphData(ksId: number): Promise<KsGraphData> {
   return get(new URL(ksId.toString(), baseUrl));
 }
 
+export function getRealKsGraphData(
+  assessmentTestId: number
+): Promise<KsGraphData> {
+  return get(new URL("real_ks/" + assessmentTestId, baseUrl));
+}
+
 export function createNode(input: KsGraphNode) {
   return post(new URL(1 + "/problems", baseUrl), JSON.stringify(input));
 }

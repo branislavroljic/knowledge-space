@@ -1,6 +1,5 @@
 import { get, post } from "@api/utils";
 
-const baseUrl = new URL("assessment_tests", import.meta.env.VITE_API_URL);
 const baseUrlWithSlash = new URL(
   "assessment_tests/",
   import.meta.env.VITE_API_URL
@@ -38,7 +37,7 @@ export type UserAssessmentTest = {
 };
 
 export function getAssessmentTests(): Promise<AssessmentTest[]> {
-  return get(new URL("by_user", baseUrl));
+  return get(new URL("by_user", baseUrlWithSlash));
 }
 
 export function getAssessmentTestQuestions(id: number): Promise<Question[]> {
