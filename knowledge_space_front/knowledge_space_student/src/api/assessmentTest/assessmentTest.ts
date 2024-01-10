@@ -10,8 +10,8 @@ export type AssessmentTest = {
   id: number;
   name: string;
   completed: boolean;
-  total? : number;
-  correct? : number;
+  total?: number;
+  correct?: number;
 };
 
 export type Question = {
@@ -38,7 +38,7 @@ export type UserAssessmentTest = {
 };
 
 export function getAssessmentTests(): Promise<AssessmentTest[]> {
-  return get(baseUrl);
+  return get(new URL("by_user", baseUrl));
 }
 
 export function getAssessmentTestQuestions(id: number): Promise<Question[]> {

@@ -1,0 +1,9 @@
+filter nema drzavu i grad
+see all sklonitii ako ima man je od 5
+qr code staviti da bude modal
+aktivnosst prodavnice da bude od 8 - 10, inace neaktivan(crveno)
+provjeriti za lajk button na pocetnoj
+NOTIFIKACIJE
+JEZIK, srpski ne radi
+mejl smanjiti font
+ubaciti pitanja

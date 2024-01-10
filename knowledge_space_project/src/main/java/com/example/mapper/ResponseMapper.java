@@ -16,4 +16,12 @@ public interface ResponseMapper {
 
   @Named("ResponseEntityToResponse")
   List<Response> mapResponseEntitiesToResponse(List<ResponseEntity> responseEntityList);
+
+  @BeanMapping(qualifiedByName = "ResponseToResponseEntity")
+  ResponseEntity mapResponseToResponseEntity(
+      com.example.model.request.assesmentTest.Response response);
+
+  @Named("ResponseToResponseEntity")
+  List<ResponseEntity> mapResponsesToResponseEntities(
+      List<com.example.model.request.assesmentTest.Response> responses);
 }

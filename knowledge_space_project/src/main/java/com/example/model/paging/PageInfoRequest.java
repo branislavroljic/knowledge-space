@@ -1,9 +1,8 @@
-package api.model.paging;
+package com.example.model.paging;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
 @Data
@@ -15,5 +14,5 @@ public class PageInfoRequest {
   private Integer pageSize = 10;
   private boolean showDeleted = false;
   private String sortBy = "id";
-  private Sort.Direction sortDirection = Direction.ASC;
+  private Direction sortDirection = Direction.ASC;
 }

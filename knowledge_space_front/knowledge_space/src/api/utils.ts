@@ -76,16 +76,15 @@ export type Page<T> = {
 };
 
 export type PageRequest = {
-  pageIndex: number;
-  pageSize: number;
-  showDeleted?: boolean;
+  page: number;
+  size: number;
   sortBy?: string;
   sortDirection?: string;
 };
 
 export type SelectInput = {
-  text: string;
-  value: number | string;
+  id: number;
+  name: string;
 };
 
 export type Status = "ACTIVE" | "DELETED";

@@ -25,7 +25,7 @@ public class AssessmentTestController {
 
   private final AssessmentTestService assessmentTestService;
 
-  @GetMapping
+  @GetMapping("/by_user")
   public ResponseEntity<List<AssessmentTest>> getAll(
       @AuthenticationPrincipal JwtUser loggedInUser) {
     return ResponseEntity.ok(assessmentTestService.getAll(loggedInUser));

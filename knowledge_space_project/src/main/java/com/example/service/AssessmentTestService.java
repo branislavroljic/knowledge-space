@@ -6,6 +6,8 @@ import com.example.model.dto.AssessmentTest;
 import com.example.model.dto.Question;
 import com.example.model.entity.AssessmentTestEntity;
 import com.example.model.entity.AssessmentTestQuestionEntity;
+import com.example.model.entity.EdgeEntity;
+import com.example.model.entity.ProblemEntity;
 import com.example.model.entity.QuestionEntity;
 import com.example.model.entity.ResponseEntity;
 import com.example.model.entity.UserAssessmentTestEntity;
@@ -15,12 +17,15 @@ import com.example.model.exception.NotFoundException;
 import com.example.model.request.UserAnswerRequest;
 import com.example.model.response.auth.UserTestResults;
 import com.example.repositories.AssessmentTestEntityRepository;
+import com.example.repositories.EdgeEntityRepository;
+import com.example.repositories.ProblemEntityRepository;
 import com.example.repositories.ResponseEntityRepository;
 import com.example.repositories.UserAssessmentTestEntityRepository;
 import com.example.repositories.UserAssessmentTestResponseEntityRepository;
 import com.example.repositories.UserEntityRepository;
 import com.example.security.JwtUser;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +46,8 @@ public class AssessmentTestService {
   private final UserAssessmentTestResponseEntityRepository
       userAssessmentTestResponseEntityRepository;
   private final QuestionMapper questionMapper;
+  private final ProblemEntityRepository problemEntityRepository;
+  private final EdgeEntityRepository edgeEntityRepository;
 
   public List<AssessmentTest> getAll(JwtUser loggedInUser) {
     List<AssessmentTest> assessmentTests =
@@ -104,17 +111,24 @@ public class AssessmentTestService {
         .build();
   }
 
-  public void startMCQ(Integer assessmentTestId){
-    AssessmentTestEntity assessmentTestEntity =
-        assessmentTestEntityRepository.findById(assessmentTestId).orElseThrow(NotFoundException::new);
-
-    //get all nodes
-    //get all edges
-
-    //find root nodes
-
-    //get all possible paths using DFS
-
-    //
-  }
+//  public void startMCQ(Integer assessmentTestId){
+//    AssessmentTestEntity assessmentTestEntity =
+//        assessmentTestEntityRepository.findById(assessmentTestId).orElseThrow(NotFoundException::new);
+//
+//      List<ProblemEntity> nodes =
+//          problemEntityRepository.findAllByKnowledgeSpaceId(assessmentTestEntity.getKnowledgeSpace().getId());
+//      List<EdgeEntity> edges =
+//          edgeEntityRepository.findBySourceProblemInOrDestinationProblemIn(nodes, nodes);
+//      List<ProblemEntity> notRootNodes =
+//          edges.stream().map(EdgeEntity::getDestinationProblem).toList();
+//
+//     List<ProblemEntity> rootNodes =  new ArrayList<>(nodes);
+//     rootNodes.removeAll(notRootNodes);
+//
+//      List<List<ProblemEntity>> learningSpaces = BFS(rootNodes, nodes ,edges);
+//
+//
+//  }
+//
+//  private
 }

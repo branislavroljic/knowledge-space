@@ -1,10 +1,16 @@
 package com.example.controller;
 
+import com.example.model.dto.AssessmentTestProfessor;
 import com.example.model.dto.Edge;
 import com.example.model.dto.Problem;
+import com.example.model.entity.KnowledgeSpaceEntity;
+import com.example.model.paging.PageInfoRequest;
+import com.example.model.paging.PageResponse;
+import com.example.model.request.assesmentTest.CreateAssessmentTestRequest;
 import com.example.model.response.auth.KnowledgeSpaceGraphData;
 import com.example.service.KnowledgeSpaceService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,9 +30,19 @@ public class KnowledgeSpaceController {
 
   private final KnowledgeSpaceService knowledgeSpaceService;
 
+  @GetMapping
+  public ResponseEntity<List<KnowledgeSpaceEntity>> getKnowledgeSpaces() {
+    return ResponseEntity.ok(knowledgeSpaceService.getKnowledgeSpaces());
+  }
+
   @GetMapping("/{id}")
   public ResponseEntity<KnowledgeSpaceGraphData> getKSGraphData(@PathVariable Integer id) {
     return ResponseEntity.ok(knowledgeSpaceService.getKSGraphData(id));
+  }
+
+  @GetMapping("/{id}/problems")
+  public ResponseEntity<List<Problem>> getKSProblems(@PathVariable Integer id) {
+    return ResponseEntity.ok(knowledgeSpaceService.getKSProblems(id));
   }
 
   @PostMapping("/{id}/problems")
@@ -56,5 +72,19 @@ public class KnowledgeSpaceController {
       @RequestParam Integer sourceId, @RequestParam Integer destinationId) {
     knowledgeSpaceService.deleteEdge(sourceId, destinationId);
     return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/{id}/assessment_tests")
+  public ResponseEntity<Void> createAssessmentTest(
+      @PathVariable Integer id,
+      @RequestBody CreateAssessmentTestRequest createAssessmentTestRequest) {
+    knowledgeSpaceService.createAssessmentTest(id, createAssessmentTestRequest);
+    return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/assessment_tests")
+  public ResponseEntity<PageResponse<AssessmentTestProfessor>> getAssessmentTests(
+      PageInfoRequest request) {
+    return ResponseEntity.ok(knowledgeSpaceService.getAssessmentTests(request));
   }
 }

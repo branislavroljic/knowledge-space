@@ -1,7 +1,7 @@
 import React from "react";
 import { createBrowserRouter } from "react-router-dom";
 import queryClient from "../query-client";
-import { getKsGraphData } from "@api/ksGraph/ksGraph";
+import { getKnowledgeSpaces } from "@api/ksGraph/knowledgeSpace";
 
 const FullLayout = React.lazy(() => import("@layout/full/FullLayout"));
 const ErrorPage = React.lazy(() => import("@pages/error/ErrorPage"));
@@ -29,9 +29,14 @@ const browserConfig = createBrowserRouter([
             errorElement: <ErrorPage />,
             loader: () =>
               queryClient.fetchQuery({
-                queryKey: ["problems", 1],
-                queryFn: () => getKsGraphData(1),
+                queryKey: ["knowledgeSpaces"],
+                queryFn: () => getKnowledgeSpaces(),
               }),
+            // loader: () =>
+            //   queryClient.fetchQuery({
+            //     queryKey: ["problems", 1],
+            //     queryFn: () => getKsGraphData(1),
+            //   }),
           },
           {
             id: "assessment_tests",

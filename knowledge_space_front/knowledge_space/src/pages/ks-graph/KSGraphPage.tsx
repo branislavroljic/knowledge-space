@@ -9,6 +9,7 @@ import {
   createEdge,
   deleteEdge,
   deleteNode,
+  getKsGraphData,
   updateNode,
 } from "@api/ksGraph/ksGraph";
 import { useLoaderData, useParams } from "react-router-dom";
@@ -28,19 +29,53 @@ import ReactFlow, {
   applyNodeChanges,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Box, Button } from "@mui/material";
+import { Autocomplete, Box, Button, TextField } from "@mui/material";
 import { undoRedoMutation } from "./undoMutations";
 import KsGraphNodeModal from "./NodeModal";
 import PageContainer from "@ui/container/PageContainer";
+import { KnowledgeSpace } from "@api/ksGraph/knowledgeSpace";
+import { useQuery } from "@tanstack/react-query";
+import { useAssessmentTestModalStore } from "@stores/assessmentTestStore";
+import {
+  AssessmentTest,
+  createAssessmentTest,
+} from "@api/assessmentTest/assessementTest";
+import AssessmentTestModal from "@pages/assessment-test/AssessmentTestModal";
 
 export default function KSGraphPage() {
-  const ksGraphdata = useLoaderData() as KsGraphData;
+  const knowledgeSpaces = useLoaderData() as KnowledgeSpace[];
+
+  const [knowledgeSpaceId, setKnowledgeSpaceId] = useState<number | undefined>(
+    undefined
+  );
+  const [ksGraphData, setKsGraphData] = useState<KsGraphData>();
   const [nodes, setNodes] = useState(
-    ksGraphdata?.nodes.map((x) => ksGraphNodeToFlowNode(x))
+    ksGraphData?.nodes.map((x) => ksGraphNodeToFlowNode(x)) ?? []
   );
   const [edges, setEdges] = useState(
-    ksGraphdata?.edges.map((x) => ksGraphToFlowEdge(x))
+    ksGraphData?.edges.map((x) => ksGraphToFlowEdge(x)) ?? []
   );
+
+  const openAssessmentTestModal = useAssessmentTestModalStore(
+    (state) => state.openModal
+  );
+  const { data } = useQuery({
+    queryKey: ["knowledge_spaces", knowledgeSpaceId],
+    queryFn: async () => {
+      if (knowledgeSpaceId !== undefined) {
+        return getKsGraphData(knowledgeSpaceId);
+      }
+      return null;
+    },
+    enabled: knowledgeSpaceId !== undefined,
+  });
+
+  useEffect(() => {
+    if (!data) return;
+    setKsGraphData(data);
+    setNodes(data?.nodes.map((x) => ksGraphNodeToFlowNode(x)));
+    setEdges(data?.edges.map((x) => ksGraphToFlowEdge(x)));
+  }, [data]);
 
   const nodeTypes = useMemo(
     () => ({
@@ -61,6 +96,10 @@ export default function KSGraphPage() {
   const openNotification = useNotificationStore(
     (state) => state.openNotification
   );
+
+  const onKnowledgeSpaceChange = (id: number) => {
+    setKnowledgeSpaceId(id);
+  };
 
   const edgeMutation = useNotifiedMutation({
     mutationFn: createEdge,
@@ -245,68 +284,116 @@ export default function KSGraphPage() {
       oldNodeItem.positionX,
       oldNodeItem.positionY,
       oldNodeItem.id,
-      routeParams.ksId,
       updateMutation,
       deleteNodeMutation,
     ]
   );
 
+  const onCreateAssessmentTestClick = useCallback(
+    () =>
+      openAssessmentTestModal({} as AssessmentTest, createAssessmentTest, true),
+    []
+  );
+
   return (
     <>
       <PageContainer title="KsGraph">
+        <AssessmentTestModal />
         <KsGraphNodeModal setNodes={setNodes} />
         <Box
           sx={{
-            minHeight: "100vh",
+            minHeight: "90vh",
             display: "flex",
             flexDirection: "column",
           }}
         >
-          <Button
-            disabled={!nextUndoAction}
-            onClick={() =>
-              undoRedoMutation(
-                setEdges,
-                setNodes,
-                undo,
-                openNotification,
-                nextUndoAction
-              )
-            }
+          <Box
+            sx={{
+              display: "flex",
+              gap: "10px",
+              width: "100%",
+              justifyContent: "space-between",
+            }}
           >
-            Undo
-          </Button>
+            <Autocomplete
+              onChange={(event, item) => {
+                onKnowledgeSpaceChange(item?.id);
+              }}
+              disablePortal
+              disableClearable
+              options={knowledgeSpaces}
+              getOptionLabel={(option) => option.name}
+              sx={{ width: 300 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Knowledge space" />
+              )}
+            />
+            <Box
+              sx={{
+                display: "flex",
+                gap: "10px",
+              }}
+            >
+              <Button
+                disabled={!knowledgeSpaceId}
+                onClick={() =>
+                  openAssessmentTestModal(
+                    {} as AssessmentTest,
+                    createAssessmentTest,
+                    true
+                  )
+                }
+              >
+                Create Assessment test
+              </Button>
+              <Button
+                disabled={!nextUndoAction}
+                onClick={() =>
+                  undoRedoMutation(
+                    setEdges,
+                    setNodes,
+                    undo,
+                    openNotification,
+                    nextUndoAction
+                  )
+                }
+              >
+                Undo
+              </Button>
 
-          <Button
-            disabled={true}
-            hidden={true}
-            onClick={() =>
-              undoRedoMutation(
-                setEdges,
-                setNodes,
-                redo,
-                openNotification,
-                nextRedoAction
-              )
-            }
-          >
-            Redo
-          </Button>
+              <Button
+                disabled={true}
+                hidden={true}
+                onClick={() =>
+                  undoRedoMutation(
+                    setEdges,
+                    setNodes,
+                    redo,
+                    openNotification,
+                    nextRedoAction
+                  )
+                }
+              >
+                Redo
+              </Button>
 
-          <Button
-            onClick={() =>
-              openNodeModal(
-                {
-                  name: "",
-                  positionY: 200,
-                  positionX: 200,
-                } as KsGraphNode,
-                true
-              )
-            }
-          >
-            +
-          </Button>
+              <Button
+                onClick={() =>
+                  openNodeModal(
+                    {
+                      name: "",
+                      positionY: 200,
+                      positionX: 200,
+                    } as KsGraphNode,
+                    true
+                  )
+                }
+              >
+                +
+              </Button>
+            </Box>
+          </Box>
+
           <ReactFlow
             nodes={nodes}
             edges={edges}

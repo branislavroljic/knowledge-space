@@ -1,4 +1,4 @@
-package api.model.paging;
+package com.example.model.paging;
 
 import java.util.List;
 import lombok.Builder;

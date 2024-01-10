@@ -18,4 +18,8 @@ public interface QuestionMapper {
 
   @Named("QuestionEntityToQuestion")
   List<Question> mapQuestionEntitiesToQuestion(List<QuestionEntity> questionEntityList);
+
+  @BeanMapping(qualifiedByName = "questionToQuestionEntity")
+  QuestionEntity mapQuestionToQuestionEntity(
+      com.example.model.request.assesmentTest.Question question);
 }

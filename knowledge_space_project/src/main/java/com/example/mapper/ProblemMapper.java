@@ -24,7 +24,7 @@ public abstract class ProblemMapper {
   public abstract Problem mapProblemEntityToProblem(ProblemEntity problemEntity);
 
   @Named("problemEntityToProblem")
-  public abstract List<Problem> mapProblemEntitiesToProblem(List<ProblemEntity> problemEntityList);
+  public abstract List<Problem> mapProblemEntitiesToProblems(List<ProblemEntity> problemEntityList);
 
   @BeanMapping(qualifiedByName = "problemProblemEntity")
   public abstract ProblemEntity mapProblemToProblemEntity(Problem problem);

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Builder
 @Data
-public class AssessmentTestAdmin {
+public class AssessmentTestProfessor {
   private Integer id;
   private String name;
   private String knowledgeSpace;
