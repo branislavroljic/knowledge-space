@@ -5,7 +5,6 @@ import com.example.mapper.EdgeMapper;
 import com.example.mapper.ProblemMapper;
 import com.example.mapper.QuestionMapper;
 import com.example.mapper.ResponseMapper;
-import com.example.model.dto.AssessmentTest;
 import com.example.model.dto.AssessmentTestProfessor;
 import com.example.model.dto.Edge;
 import com.example.model.dto.Problem;
@@ -30,12 +29,9 @@ import com.example.repositories.KnowledgeSpaceEntityRepository;
 import com.example.repositories.ProblemEntityRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -58,9 +54,6 @@ public class KnowledgeSpaceService {
   private final AssessmentTestQuestionEntityRepository assessmentTestQuestionEntityRepository;
   private final AssessmentTestMapper assessmentTestMapper;
   private final AssessmentTestEntityRepository assessmentTestEntityRepository;
-  private final AssessmentTestService assessmentTestService;
-  private final KSFlaskService ksFlaskService;
-
   public List<KnowledgeSpaceEntity> getKnowledgeSpaces() {
     return knowledgeSpaceEntityRepository.findAll();
   }
@@ -212,82 +205,6 @@ public class KnowledgeSpaceService {
         assessmentTestEntities);
   }
 
-  public KnowledgeSpaceGraphData getRealKnowledgeSpace(Integer assessmentTestId) {
-    AssessmentTestEntity assessmentTestEntity =
-        assessmentTestEntityRepository
-            .findById(assessmentTestId)
-            .orElseThrow(NotFoundException::new);
-
-    List<ProblemEntity> nodes =
-        problemEntityRepository.findAllByKnowledgeSpaceId(
-            assessmentTestEntity.getKnowledgeSpace().getId());
-    List<EdgeEntity> edges =
-        edgeEntityRepository.findBySourceProblemInOrDestinationProblemIn(nodes, nodes);
-
-    Map<Integer, List<ProblemEntity>> problemLevelTree =
-        assessmentTestService.getProblemsLevelTree(nodes, edges);
-    //    List<ProblemEntity> sortedProblems =
-    // assessmentTestService.getSortedProblems(problemLevelTree);
-    List<ProblemEntity> sortedProblems = problemLevelTree.get(0);
-    int[][] matrix =
-        assessmentTestService.generateAssessmentTestMatrix(assessmentTestId, sortedProblems);
-
-    int[][] result = ksFlaskService.getIITAImplications(matrix).block();
-
-    if (result == null) {
-      throw new RuntimeException("IITA call failed!");
-    }
-
-    System.out.println("Matrix:");
-    for (int i = 0; i < matrix.length; i++) {
-      for (int j = 0; j < matrix[i].length; j++) {
-        System.out.print(matrix[i][j] + " ");
-      }
-      System.out.println(); // Move to the next line after each row
-    }
-    System.out.println("iita");
-    for (int i = 0; i < result.length; i++) {
-      System.out.print("(" + result[i][0] + " " + result[i][1] + ")");
-    }
-    System.out.println();
-
-    Set<ProblemEntity> calculatedNodes = new HashSet<>();
-    List<EdgeEntity> calculatedEdges = new ArrayList<>();
-
-    List<ProblemEntity> assessmentTestProblems =
-        assessmentTestEntity.getQuestions().stream()
-            .map(q -> q.getQuestion().getProblem())
-            .toList();
-
-    // sorted problems should contain only problems within assessment test
-    sortedProblems.removeIf(problem -> !assessmentTestProblems.contains(problem));
-
-    for (int[] implications : result) {
-      ProblemEntity sourceNode = sortedProblems.get(implications[0]);
-      ProblemEntity destNode = sortedProblems.get(implications[1]);
-      calculatedNodes.add(sourceNode);
-      calculatedNodes.add(destNode);
-
-      EdgeEntity iitaEdge = new EdgeEntity();
-      iitaEdge.setSourceProblem(sourceNode);
-      iitaEdge.setDestinationProblem(destNode);
-      Optional<EdgeEntity> sameNodesEdge =
-          calculatedEdges.stream()
-              .filter(
-                  e ->
-                      e.getSourceProblem().equals(destNode)
-                          && e.getDestinationProblem().equals(sourceNode))
-              .findFirst();
-
-      if (sameNodesEdge.isPresent()) calculatedEdges.remove(sameNodesEdge.get());
-      else calculatedEdges.add(iitaEdge);
-    }
-
-    return KnowledgeSpaceGraphData.builder()
-        .nodes(problemMapper.mapProblemEntitiesToProblems(new ArrayList<>(calculatedNodes)))
-        .edges(edgeMapper.mapEdgeEntitiesToEdges(calculatedEdges))
-        .build();
-  }
 
   //  private void generateGraph(Graph g, HashMap<Long, Node> nodes, String edgeStr) {
   //    String node1_id = edgeStr.split("\\.")[0];

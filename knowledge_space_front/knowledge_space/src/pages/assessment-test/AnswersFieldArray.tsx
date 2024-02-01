@@ -4,9 +4,14 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
+  IconButton,
+  Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import { Controller, useFieldArray } from "react-hook-form";
+
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function AnswersFieldArray({
   questionIndex,
@@ -23,34 +28,49 @@ export default function AnswersFieldArray({
       {fields.map((item, k) => {
         return (
           <Box key={item.id} style={{ marginLeft: 20 }}>
-            <label>Answer:</label>
-            <Controller
-              name={`questions.${questionIndex}.responses.${k}.title` as const}
-              control={control}
-              defaultValue={""}
-              render={({ field }) => (
-                <TextField
-                  label={"Title"}
-                  fullWidth
-                  error={
-                    errors.questions &&
-                    errors.questions[questionIndex].responses &&
-                    errors.questions[questionIndex].responses[k]?.title
-                  }
-                  helperText={
-                    errors.questions &&
-                    errors.questions[questionIndex]?.responses[k]?.title
-                      ? errors.questions[questionIndex].responses[k]?.title
-                          .message
-                      : undefined
-                  }
-                  placeholder={"Title"}
-                  margin="normal"
-                  id={`response_title_${k}`}
-                  {...field}
-                />
-              )}
-            />
+            <Typography variant="subtitle2" fontWeight={"700"}>
+              {" "}
+              Answer {k + 1}
+            </Typography>
+            <Stack
+              direction={"row"}
+              justifyContent={"center"}
+              alignItems={"center"}
+              gap={2}
+            >
+              <Controller
+                name={
+                  `questions.${questionIndex}.responses.${k}.title` as const
+                }
+                control={control}
+                defaultValue={""}
+                render={({ field }) => (
+                  <TextField
+                    label={"Title"}
+                    fullWidth
+                    error={
+                      errors.questions &&
+                      errors.questions[questionIndex].responses &&
+                      errors.questions[questionIndex].responses[k]?.title
+                    }
+                    helperText={
+                      errors.questions &&
+                      errors.questions[questionIndex]?.responses[k]?.title
+                        ? errors.questions[questionIndex].responses[k]?.title
+                            .message
+                        : undefined
+                    }
+                    placeholder={"Title"}
+                    margin="normal"
+                    id={`response_title_${k}`}
+                    {...field}
+                  />
+                )}
+              />
+              <IconButton color="error" onClick={() => remove(k)}>
+                <DeleteIcon />
+              </IconButton>
+            </Stack>
 
             <FormControlLabel
               control={
@@ -71,19 +91,20 @@ export default function AnswersFieldArray({
               }
               label={"Correct"}
             />
-
-            <Button color="error" onClick={() => remove(k)}>
-              Remove answer
-            </Button>
           </Box>
         );
       })}
 
-      <Button type="button" onClick={() => append({} as Response)}>
-        Add answer
-      </Button>
-
-      <hr />
+      <Box display={"flex"} justifyContent={"center"} mt={2}>
+        <Button
+          type="button"
+          color="warning"
+          onClick={() => append({} as Response)}
+        >
+          Add answer
+        </Button>
+      </Box>
+      {/* <hr /> */}
     </div>
   );
 }

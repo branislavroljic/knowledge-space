@@ -8,6 +8,7 @@ import com.example.model.paging.PageInfoRequest;
 import com.example.model.paging.PageResponse;
 import com.example.model.request.assesmentTest.CreateAssessmentTestRequest;
 import com.example.model.response.auth.KnowledgeSpaceGraphData;
+import com.example.service.AssessmentTestService;
 import com.example.service.KnowledgeSpaceService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class KnowledgeSpaceController {
 
   private final KnowledgeSpaceService knowledgeSpaceService;
+  private final AssessmentTestService assessmentTestService;
 
   @GetMapping
   public ResponseEntity<List<KnowledgeSpaceEntity>> getKnowledgeSpaces() {
@@ -98,6 +100,6 @@ public class KnowledgeSpaceController {
   public ResponseEntity<KnowledgeSpaceGraphData> getRealKnowledgeSpace(
       @PathVariable Integer assessment_test_id) {
 
-    return ResponseEntity.ok(knowledgeSpaceService.getRealKnowledgeSpace(assessment_test_id));
+    return ResponseEntity.ok(assessmentTestService.getRealKnowledgeSpace(assessment_test_id, null));
   }
 }

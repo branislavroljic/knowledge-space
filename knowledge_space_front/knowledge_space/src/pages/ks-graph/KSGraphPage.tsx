@@ -342,7 +342,7 @@ export default function KSGraphPage() {
               minHeight: "90vh",
               display: "flex",
               flexDirection: "column",
-              flex: 1.3,
+              flex: 1.1,
             }}
           >
             <Box
@@ -380,6 +380,7 @@ export default function KSGraphPage() {
                 sx={{
                   display: "flex",
                   gap: "10px",
+                  alignItems: "center",
                 }}
               >
                 <Button
@@ -391,8 +392,9 @@ export default function KSGraphPage() {
                       true
                     )
                   }
+                  color="success"
                 >
-                  Create Assessment test
+                  Create test
                 </Button>
                 <Button
                   disabled={!nextUndoAction}
@@ -405,6 +407,7 @@ export default function KSGraphPage() {
                       nextUndoAction
                     )
                   }
+                  color="error"
                 >
                   Undo
                 </Button>
@@ -421,6 +424,7 @@ export default function KSGraphPage() {
                       nextRedoAction
                     )
                   }
+                  color='warning'
                 >
                   Redo
                 </Button>

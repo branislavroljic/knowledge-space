@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?><qti-assessment-test xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd" identifier="10" title="test_za_rad" >
+<qti-test-part identifier="testPart-1" navigation-mode="linear" submission-mode="individual">
+<qti-assessment-section identifier="assessmentSection-1" title="Section 1" visible="true">
+<qti-selection select="2"> <qti-assessment-item-ref href="questions/test10-1.xml" identifier="1"/> <qti-assessment-item-ref href="questions/test10-2.xml" identifier="2"/></qti-selection>
+</qti-assessment-section>
+</qti-test-part>
+</qti-assessment-test>

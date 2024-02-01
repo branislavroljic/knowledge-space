@@ -15,7 +15,7 @@ import com.example.model.entity.UserAssessmentTestResponseEntity;
 import com.example.model.entity.UserEntity;
 import com.example.model.exception.NotFoundException;
 import com.example.model.request.UserAnswerRequest;
-import com.example.model.response.auth.UserTestResults;
+import com.example.model.response.auth.KnowledgeSpaceGraphData;
 import com.example.repositories.AssessmentTestEntityRepository;
 import com.example.repositories.EdgeEntityRepository;
 import com.example.repositories.ProblemEntityRepository;
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,7 @@ public class AssessmentTestService {
   private final QuestionMapper questionMapper;
   private final ProblemEntityRepository problemEntityRepository;
   private final EdgeEntityRepository edgeEntityRepository;
+  private final KSFlaskService ksFlaskService;
 
   public List<AssessmentTest> getAll(JwtUser loggedInUser) {
     List<AssessmentTest> assessmentTests =
@@ -78,7 +78,7 @@ public class AssessmentTestService {
   //    return questionMapper.mapQuestionEntitiesToQuestion(questionsEntities);
   //  }
 
-  public UserTestResults submitAssessmentTest(
+  public KnowledgeSpaceGraphData submitAssessmentTest(
       Integer assessmentTestId, JwtUser loggedInUser, List<UserAnswerRequest> answers) {
     UserEntity userEntity = userEntityRepository.getReferenceById(loggedInUser.getId());
     AssessmentTestEntity assessmentTestEntity =
@@ -93,7 +93,6 @@ public class AssessmentTestService {
     userAssessmentTestEntity.setUser(userEntity);
     userAssessmentTestEntity.setAssessmentTest(assessmentTestEntity);
     userAssessmentTestEntity.setId(0);
-
     userAssessmentTestEntityRepository.save(userAssessmentTestEntity);
 
     List<UserAssessmentTestResponseEntity> userResponses =
@@ -108,13 +107,37 @@ public class AssessmentTestService {
                   return userResponse;
                 })
             .toList();
-
     userAssessmentTestResponseEntityRepository.saveAll(userResponses);
 
-    return UserTestResults.builder()
-        .total(assessmentTestEntity.getQuestions().size())
-        .correct(responses.stream().filter(ResponseEntity::isCorrect).count())
-        .build();
+    // user responses are already sorted
+    List<ProblemEntity> sortedProblems =
+        responses.stream().map(r -> r.getQuestion().getProblem()).toList();
+
+    // creating single row matrix for iita
+    int[][] matrix =
+        new int[][] {
+          responses.stream().map(r -> r.isCorrect() ? 1 : 0).mapToInt(Integer::intValue).toArray()
+        };
+    int[][] result = ksFlaskService.getIITAImplications(matrix).block();
+
+    if (result == null) {
+      throw new RuntimeException("IITA call failed!");
+    }
+
+    System.out.println("Matrix:");
+    for (int i = 0; i < matrix.length; i++) {
+      for (int j = 0; j < matrix[i].length; j++) {
+        System.out.print(matrix[i][j] + " ");
+      }
+      System.out.println();
+    }
+    System.out.println("iita");
+    for (int i = 0; i < result.length; i++) {
+      System.out.print("(" + result[i][0] + " " + result[i][1] + ")");
+    }
+    System.out.println();
+
+    return ksFlaskService.constructRealKnowledgeSpace(result, sortedProblems);
   }
 
   public List<Question> getAssessmentTestQuestions(
@@ -146,14 +169,28 @@ public class AssessmentTestService {
     return questionMapper.mapQuestionEntitiesToQuestion(sortedQuestionEntities);
   }
 
+  public KnowledgeSpaceGraphData getRealStudentKs(Integer assessmentTestId, JwtUser loggedInUser) {
+    UserEntity userEntity = userEntityRepository.getReferenceById(loggedInUser.getId());
+
+    return getRealKnowledgeSpace(assessmentTestId, userEntity);
+  }
+
   public int[][] generateAssessmentTestMatrix(
-      Integer assessmentTestId, List<ProblemEntity> sortedProblems) {
+      Integer assessmentTestId, List<ProblemEntity> sortedProblems, UserEntity userEntity) {
     AssessmentTestEntity assessmentTestEntity =
         assessmentTestEntityRepository
             .findById(assessmentTestId)
             .orElseThrow(NotFoundException::new);
-    List<UserAssessmentTestEntity> userAssessmentTestEntities =
-        userAssessmentTestEntityRepository.findAllByAssessmentTest(assessmentTestEntity);
+
+    List<UserAssessmentTestEntity> userAssessmentTestEntities;
+    if (userEntity != null)
+      userAssessmentTestEntities =
+          List.of(
+              userAssessmentTestEntityRepository.findByAssessmentTestAndUser(
+                  assessmentTestEntity, userEntity));
+    else
+      userAssessmentTestEntities =
+          userAssessmentTestEntityRepository.findAllByAssessmentTest(assessmentTestEntity);
 
     int[][] matrix =
         new int[userAssessmentTestEntities.size()][assessmentTestEntity.getQuestions().size()];
@@ -184,6 +221,55 @@ public class AssessmentTestService {
       }
     }
     return matrix;
+  }
+
+  public KnowledgeSpaceGraphData getRealKnowledgeSpace(
+      Integer assessmentTestId, UserEntity userEntity) {
+    AssessmentTestEntity assessmentTestEntity =
+        assessmentTestEntityRepository
+            .findById(assessmentTestId)
+            .orElseThrow(NotFoundException::new);
+
+    List<ProblemEntity> nodes =
+        problemEntityRepository.findAllByKnowledgeSpaceId(
+            assessmentTestEntity.getKnowledgeSpace().getId());
+    List<EdgeEntity> edges =
+        edgeEntityRepository.findBySourceProblemInOrDestinationProblemIn(nodes, nodes);
+
+    Map<Integer, List<ProblemEntity>> problemLevelTree = getProblemsLevelTree(nodes, edges);
+    //    List<ProblemEntity> sortedProblems =
+    // assessmentTestService.getSortedProblems(problemLevelTree);
+    List<ProblemEntity> sortedProblems = problemLevelTree.get(0);
+    int[][] matrix = generateAssessmentTestMatrix(assessmentTestId, sortedProblems, userEntity);
+
+    int[][] result = ksFlaskService.getIITAImplications(matrix).block();
+
+    if (result == null) {
+      throw new RuntimeException("IITA call failed!");
+    }
+
+    System.out.println("Matrix:");
+    for (int i = 0; i < matrix.length; i++) {
+      for (int j = 0; j < matrix[i].length; j++) {
+        System.out.print(matrix[i][j] + " ");
+      }
+      System.out.println();
+    }
+    System.out.println("iita");
+    for (int i = 0; i < result.length; i++) {
+      System.out.print("(" + result[i][0] + " " + result[i][1] + ")");
+    }
+    System.out.println();
+
+    List<ProblemEntity> assessmentTestProblems =
+        assessmentTestEntity.getQuestions().stream()
+            .map(q -> q.getQuestion().getProblem())
+            .toList();
+
+    // sorted problems should contain only problems within assessment test
+    sortedProblems.removeIf(problem -> !assessmentTestProblems.contains(problem));
+
+    return ksFlaskService.constructRealKnowledgeSpace(result, sortedProblems);
   }
 
   public List<ProblemEntity> getSortedProblems(Map<Integer, List<ProblemEntity>> problemLevelTree) {
@@ -242,9 +328,7 @@ public class AssessmentTestService {
     }
 
     return questionEntities.stream()
-        .sorted(
-            Comparator.comparing(
-                q -> problemIndexMap.get(q.getProblem())))
+        .sorted(Comparator.comparing(q -> problemIndexMap.get(q.getProblem())))
         .toList();
   }
 }

@@ -4,10 +4,12 @@ import com.example.model.dto.AssessmentTest;
 import com.example.model.dto.Question;
 import com.example.model.dto.Response;
 import com.example.model.request.UserAnswerRequest;
+import com.example.model.response.auth.KnowledgeSpaceGraphData;
 import com.example.model.response.auth.UserTestResults;
 import com.example.security.JwtUser;
 import com.example.service.AssessmentTestService;
 import com.example.service.KnowledgeSpaceService;
+import com.example.service.QTIService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AssessmentTestController {
 
   private final AssessmentTestService assessmentTestService;
-  private final KnowledgeSpaceService knowledgeSpaceService;
+  private final QTIService qtiService;
 
   @GetMapping("/by_user")
   public ResponseEntity<List<AssessmentTest>> getAll(
@@ -38,18 +40,29 @@ public class AssessmentTestController {
     return ResponseEntity.ok(assessmentTestService.getAssessmentTestQuestions(id, null));
   }
 
+  @GetMapping("/{id}/real_ks")
+  public ResponseEntity<KnowledgeSpaceGraphData> getRealStudentKs(
+      @PathVariable Integer id, @AuthenticationPrincipal JwtUser loggedInUser) {
+    return ResponseEntity.ok(assessmentTestService.getRealStudentKs(id, loggedInUser));
+  }
+
   @PostMapping("/{id}")
-  public ResponseEntity<UserTestResults> submitAssessmentTest(
+  public ResponseEntity<KnowledgeSpaceGraphData> submitAssessmentTest(
       @PathVariable Integer id,
       @AuthenticationPrincipal JwtUser loggedInUser,
       @RequestBody List<UserAnswerRequest> answers) {
-    ;
+
     return ResponseEntity.ok(assessmentTestService.submitAssessmentTest(id, loggedInUser, answers));
   }
 
   @GetMapping("/{id}/matrix")
   public ResponseEntity<Void> getMatrix(@PathVariable Integer id) {
-    knowledgeSpaceService.getRealKnowledgeSpace(id);
+    assessmentTestService.getRealKnowledgeSpace(id, null);
     return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/{id}/imsqti")
+  public ResponseEntity<byte[]> generateQti(@PathVariable Integer id) {
+    return ResponseEntity.ok(qtiService.generateQTI(id));
   }
 }

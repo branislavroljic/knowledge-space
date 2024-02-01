@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  Divider,
   TextField,
 } from "@mui/material";
 import { useAssessmentTestModalStore } from "@stores/assessmentTestStore";
@@ -77,7 +78,12 @@ export default function AssessmentTestModal() {
   const onError = (errors: any, e: any) => console.log(errors, e);
 
   return (
-    <Dialog open={isOpen} onClose={() => handleCloseModal(hasChanged)}>
+    <Dialog
+      open={isOpen}
+      onClose={() => handleCloseModal(hasChanged)}
+      fullWidth={true}
+      maxWidth={'sm'}
+    >
       {/* <DialogTitle></DialogTitle> */}
       <Box
         component="form"
@@ -110,6 +116,7 @@ export default function AssessmentTestModal() {
               />
             )}
           />
+          <Divider>QUESTIONS</Divider>
           <QuestionsFieldArray
             {...{ control: control, errors: errors, problems }}
           />

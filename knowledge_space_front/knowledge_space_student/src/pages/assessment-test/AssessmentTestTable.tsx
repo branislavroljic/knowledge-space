@@ -18,14 +18,16 @@ import {
 } from "@api/assessmentTest/assessmentTest";
 import QuizIcon from "@mui/icons-material/Quiz";
 import { useNavigate } from "react-router-dom";
+import useAuthStore from "@stores/authStore";
 
 export default function AssessmentTestTable() {
   const theme = useTheme();
+  const user = useAuthStore((s) => s.user);
 
   const navigate = useNavigate();
 
   const { data, isError, isFetching, isLoading, refetch } = useQuery({
-    queryKey: ["assessment_tests"],
+    queryKey: ["assessment_tests", user?.id],
     queryFn: async () => {
       return getAssessmentTests();
     },

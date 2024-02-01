@@ -22,9 +22,15 @@ import {
   AssessmentTest,
   getAssessmentTests,
 } from "@api/ksGraph/knowledgeSpace";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import { getUserFromStorage } from "@api/auth";
+import { useNavigate } from "react-router-dom";
+import QuizIcon from "@mui/icons-material/Quiz";
 
 export default function AssessmentTestTable() {
   const theme = useTheme();
+  const user = getUserFromStorage();
+  const navigate = useNavigate();
 
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
@@ -50,6 +56,65 @@ export default function AssessmentTestTable() {
 
   const defaultData = useMemo(() => [] as AssessmentTest[], []);
 
+  const handleDownload = async (id: number) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}assessment_tests/${id}/imsqti`,
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "qti.zip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        console.error("Failed to fetch the file");
+      }
+    } catch (error) {
+      console.error("Error fetching the file:", error);
+    }
+  };
+
+  const qtiButton = (item: AssessmentTest, key: string) => (
+    <Tooltip arrow title={"Generate IMS QTI"} key={key}>
+      <IconButton
+        color="primary"
+        onClick={(e) => {
+          handleDownload(item.id);
+          // generateQTI(item.id);
+          e.stopPropagation();
+        }}
+      >
+        <FileDownloadIcon />
+      </IconButton>
+    </Tooltip>
+  );
+
+  const questionsButton = (item: AssessmentTest, key: string) => (
+    <Tooltip arrow title={"Take the test"} key={key}>
+      <IconButton
+        color="primary"
+        onClick={(e) => {
+          navigate("/assessment_tests/" + item.id + "/questions", {
+            state: { assessmentTest: item },
+          });
+          e.stopPropagation();
+        }}
+      >
+        <QuizIcon />
+      </IconButton>
+    </Tooltip>
+  );
+
   const table = useMaterialReactTable({
     columns,
     data: data?.rows ?? defaultData,
@@ -57,6 +122,7 @@ export default function AssessmentTestTable() {
     manualPagination: true,
     enableColumnActions: false,
     enableGlobalFilter: false,
+    enableRowActions: true,
     muiToolbarAlertBannerProps: isError
       ? {
           color: "error",
@@ -71,6 +137,18 @@ export default function AssessmentTestTable() {
             <RefreshIcon />
           </IconButton>
         </Tooltip>
+      </Box>
+    ),
+    renderRowActions: ({ row }) => (
+      <Box sx={{ display: "flex", flexWrap: "nowrap", gap: "8px" }}>
+        {qtiButton(
+          row.original as AssessmentTest,
+          (row.original as AssessmentTest).id + "_" + "qti"
+        )}
+        {questionsButton(
+          row.original as AssessmentTest,
+          (row.original as AssessmentTest).id + "_" + "qti"
+        )}
       </Box>
     ),
     rowCount: data?.totalCount ?? 0,
