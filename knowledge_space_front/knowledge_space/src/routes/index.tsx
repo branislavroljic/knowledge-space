@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import queryClient from "../query-client";
 import { getKnowledgeSpaces } from "@api/ksGraph/knowledgeSpace";
 import { QuestionsPage } from "@pages/questions/QuestionsPage";
+import StatisticsPage from "@pages/statistics/StatisticsPage";
 
 const FullLayout = React.lazy(() => import("@layout/full/FullLayout"));
 const ErrorPage = React.lazy(() => import("@pages/error/ErrorPage"));
@@ -52,6 +53,12 @@ const browserConfig = createBrowserRouter([
                 id: "questions",
                 path: ":assessmentTestId/questions",
                 element: <QuestionsPage />,
+                errorElement: <ErrorPage />,
+              },
+              {
+                id: "statistics",
+                path: ":assessmentTestId/statistics",
+                element: <StatisticsPage />,
                 errorElement: <ErrorPage />,
               },
             ],

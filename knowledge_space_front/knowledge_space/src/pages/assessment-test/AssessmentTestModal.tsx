@@ -12,6 +12,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogTitle,
   Divider,
   TextField,
 } from "@mui/material";
@@ -82,9 +83,9 @@ export default function AssessmentTestModal() {
       open={isOpen}
       onClose={() => handleCloseModal(hasChanged)}
       fullWidth={true}
-      maxWidth={'sm'}
+      maxWidth={"sm"}
     >
-      {/* <DialogTitle></DialogTitle> */}
+      <DialogTitle>Test</DialogTitle>
       <Box
         component="form"
         onSubmit={handleSubmit(createAssessmentTest, onError)}

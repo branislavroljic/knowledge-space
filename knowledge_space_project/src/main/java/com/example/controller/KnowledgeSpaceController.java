@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.model.dto.AssessmentTestProfessor;
 import com.example.model.dto.Edge;
 import com.example.model.dto.Problem;
+import com.example.model.dto.Report;
 import com.example.model.entity.KnowledgeSpaceEntity;
 import com.example.model.paging.PageInfoRequest;
 import com.example.model.paging.PageResponse;
@@ -101,5 +102,10 @@ public class KnowledgeSpaceController {
       @PathVariable Integer assessment_test_id) {
 
     return ResponseEntity.ok(assessmentTestService.getRealKnowledgeSpace(assessment_test_id, null));
+  }
+
+  @GetMapping("/statistics/{assessment_test_id}")
+  public ResponseEntity<List<Report>> getStatistics(@PathVariable Integer assessment_test_id) {
+    return ResponseEntity.ok(assessmentTestService.getStatistics(assessment_test_id));
   }
 }

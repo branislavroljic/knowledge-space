@@ -55,7 +55,7 @@ export function QuestionsPage() {
   const handlePrevButton = () => {
     setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
 
-    if (questions && currentQuestionIndex < questions.length - 1) {
+    if (questions && currentQuestionIndex >= 0) {
       showQuestion(currentQuestionIndex - 1);
     }
   };
@@ -102,17 +102,25 @@ export function QuestionsPage() {
               justifyContent={"space-between"}
               mt={3}
             >
-              {currentQuestionIndex > 0 && (
-                <Button fullWidth color="error" onClick={handlePrevButton}>
-                  Prev
-                </Button>
-              )}
-              {questions?.length &&
-                currentQuestionIndex < questions?.length && (
-                  <Button fullWidth onClick={handleNextButton}>
-                    Next
-                  </Button>
-                )}
+              <Button
+                fullWidth
+                color="error"
+                onClick={handlePrevButton}
+                disabled={currentQuestionIndex == 0}
+              >
+                Prev
+              </Button>
+
+              <Button
+                fullWidth
+                onClick={handleNextButton}
+                disabled={
+                  !questions?.length ||
+                  currentQuestionIndex >= questions?.length - 1
+                }
+              >
+                Next
+              </Button>
             </Stack>
           </div>
         </div>

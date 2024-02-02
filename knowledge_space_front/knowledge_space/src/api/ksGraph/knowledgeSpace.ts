@@ -15,6 +15,11 @@ export type AssessmentTest = SelectInput & {
   knowledgeSpace: string;
 };
 
+export type Report = {
+  xvalue: string;
+  yvalue: number;
+};
+
 export function getKnowledgeSpaces(): Promise<KnowledgeSpace[]> {
   return get(baseUrl);
 }
@@ -34,4 +39,8 @@ export function getAssessmentTestsForKS(
   ksId: number
 ): Promise<AssessmentTest[]> {
   return get(new URL(ksId + "/assessment_tests", baseUrlWithSlash));
+}
+
+export function getStatistics(assessmentTestId?: number) {
+  return get(new URL("statistics/" + assessmentTestId, baseUrlWithSlash));
 }

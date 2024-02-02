@@ -4,6 +4,7 @@ import com.example.mapper.AssessmentTestMapper;
 import com.example.mapper.QuestionMapper;
 import com.example.model.dto.AssessmentTest;
 import com.example.model.dto.Question;
+import com.example.model.dto.Report;
 import com.example.model.entity.AssessmentTestEntity;
 import com.example.model.entity.AssessmentTestQuestionEntity;
 import com.example.model.entity.EdgeEntity;
@@ -302,6 +303,10 @@ public class AssessmentTestService {
       traverseAndAddToTree(problem, problemLevelTree, problemChildrenMap, 0);
     }
     return problemLevelTree;
+  }
+
+  public List<Report> getStatistics(Integer assessmentTestId) {
+    return assessmentTestEntityRepository.getStatistics(assessmentTestId);
   }
 
   private void traverseAndAddToTree(

@@ -5,7 +5,13 @@ import {
   getAssessmentTestQuestions,
   submitAssessmentTest,
 } from "@api/assessmentTest/assessmentTest";
-import { Box, Button, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  Button,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import PageContainer from "@ui/container/PageContainer";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -16,6 +22,7 @@ import { KsGraphData, getStudentRealKsGraphData } from "@api/ksGraph/ksGraph";
 import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
 import { ksGraphNodeToFlowNode, ksGraphToFlowEdge } from "./util";
 import EditableNode from "./EditableNode";
+import "reactflow/dist/style.css";
 
 export function QuestionsPage() {
   const params = useParams();
@@ -54,6 +61,7 @@ export function QuestionsPage() {
   });
 
   useEffect(() => {
+    if (!realKsData) return;
     setStudentKsGraphData(realKsData);
   }, [realKsData]);
 
@@ -151,7 +159,7 @@ export function QuestionsPage() {
 
   return (
     <PageContainer title="Questions" description="this is innerpage">
-      <Box sx={{ display: "flex", paddingTop: 2 }}>
+      <Box sx={{ display: "flex" }}>
         {!studentKsGraphData ? (
           <div className="app">
             <h1>{state?.assessmentTest?.name}</h1>
@@ -191,16 +199,20 @@ export function QuestionsPage() {
           <Box
             sx={{
               minHeight: "90vh",
+              display: "flex",
               flex: 1,
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems : 'center',
+              gap : 2
             }}
           >
+            <Typography variant="h4">Your Knowledge Space</Typography>
             <ReactFlow
-              nodes={studentKsGraphData?.nodes.map((x) =>
-                ksGraphNodeToFlowNode(x)
-              )}
-              edges={studentKsGraphData?.edges.map((x) => ksGraphToFlowEdge(x))}
+              nodes={realKsData?.nodes.map((x) => ksGraphNodeToFlowNode(x))}
+              edges={realKsData?.edges.map((x) => ksGraphToFlowEdge(x))}
               nodeTypes={nodeTypes}
-              style={{ flex: 1}}
+              style={{ flex: 1 }}
             >
               <Background />
               <Controls />

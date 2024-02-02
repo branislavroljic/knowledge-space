@@ -1,4 +1,4 @@
-package api.model.dto.statistic;
+package com.example.model.dto;
 
 public interface Report {
   String getXValue();

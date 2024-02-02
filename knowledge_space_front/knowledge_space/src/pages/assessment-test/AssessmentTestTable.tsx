@@ -23,6 +23,7 @@ import {
   getAssessmentTests,
 } from "@api/ksGraph/knowledgeSpace";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { getUserFromStorage } from "@api/auth";
 import { useNavigate } from "react-router-dom";
 import QuizIcon from "@mui/icons-material/Quiz";
@@ -87,7 +88,7 @@ export default function AssessmentTestTable() {
   const qtiButton = (item: AssessmentTest, key: string) => (
     <Tooltip arrow title={"Generate IMS QTI"} key={key}>
       <IconButton
-        color="primary"
+        color="warning"
         onClick={(e) => {
           handleDownload(item.id);
           // generateQTI(item.id);
@@ -100,7 +101,7 @@ export default function AssessmentTestTable() {
   );
 
   const questionsButton = (item: AssessmentTest, key: string) => (
-    <Tooltip arrow title={"Take the test"} key={key}>
+    <Tooltip arrow title={"View test"} key={key}>
       <IconButton
         color="primary"
         onClick={(e) => {
@@ -111,6 +112,20 @@ export default function AssessmentTestTable() {
         }}
       >
         <QuizIcon />
+      </IconButton>
+    </Tooltip>
+  );
+
+  const statisticsButton = (item: AssessmentTest, key: string) => (
+    <Tooltip arrow title={"Statistics"} key={key}>
+      <IconButton
+        color="success"
+        onClick={(e) => {
+          navigate("/assessment_tests/" + item.id + "/statistics");
+          e.stopPropagation();
+        }}
+      >
+        <BarChartIcon />
       </IconButton>
     </Tooltip>
   );
@@ -148,6 +163,10 @@ export default function AssessmentTestTable() {
         {questionsButton(
           row.original as AssessmentTest,
           (row.original as AssessmentTest).id + "_" + "qti"
+        )}
+        {statisticsButton(
+          row.original as AssessmentTest,
+          (row.original as AssessmentTest).id + "_" + "statistics"
         )}
       </Box>
     ),
