@@ -75,7 +75,7 @@ export default function KSGraphPage() {
   const openAssessmentTestModal = useAssessmentTestModalStore(
     (state) => state.openModal
   );
-  const { data } = useQuery({
+  const { data, refetch : refetchKnowledgeSpaceData } = useQuery({
     queryKey: ["knowledge_spaces", knowledgeSpaceId],
     queryFn: async () => {
       if (knowledgeSpaceId !== undefined) {
@@ -84,6 +84,7 @@ export default function KSGraphPage() {
       return null;
     },
     enabled: knowledgeSpaceId !== undefined,
+    
   });
 
   const { data: assessmentTests, refetch: refetchAssessmentTests } = useQuery({
@@ -413,7 +414,7 @@ export default function KSGraphPage() {
                 </Button>
 
                 <Button
-                  disabled={true}
+                  disabled={!nextRedoAction}
                   hidden={true}
                   onClick={() =>
                     undoRedoMutation(

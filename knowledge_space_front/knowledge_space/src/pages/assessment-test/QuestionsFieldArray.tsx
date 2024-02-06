@@ -22,8 +22,9 @@ export default function QuestionsFieldArray({
   });
 
   const [selectedProblemIds, setSelectedProblemIds] = useState<number[]>([]);
+  const [lastSelectedProblemId, setLastSelectedProblemId] = useState<number>();
 
-  const handleAutocompleteChange = (event, item, index) => {
+  const handleAutocompleteChange = (_event: any, item: any) => {
     const selectedId = item?.id;
 
     if (selectedId !== undefined) {
@@ -32,13 +33,17 @@ export default function QuestionsFieldArray({
         ...prevSelectedIds,
         selectedId,
       ]);
+      setLastSelectedProblemId(selectedId);
     } else {
       // User canceled the selection, so remove the problem ID
       setSelectedProblemIds((prevSelectedIds) => {
         const updatedIds = [...prevSelectedIds];
-        const indexToRemove = updatedIds.indexOf(fields[index]?.problemId);
-        if (indexToRemove !== -1) {
-          updatedIds.splice(indexToRemove, 1);
+
+        if (lastSelectedProblemId) {
+          const indexToRemove = updatedIds.indexOf(lastSelectedProblemId);
+          if (indexToRemove !== -1) {
+            updatedIds.splice(indexToRemove, 1);
+          }
         }
         return updatedIds;
       });

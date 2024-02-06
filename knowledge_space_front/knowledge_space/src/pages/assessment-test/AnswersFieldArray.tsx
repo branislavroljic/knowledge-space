@@ -12,6 +12,7 @@ import {
 import { Controller, useFieldArray } from "react-hook-form";
 
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useState } from "react";
 
 export default function AnswersFieldArray({
   questionIndex,
@@ -23,11 +24,15 @@ export default function AnswersFieldArray({
     name: `questions.${questionIndex}.responses`,
   });
 
+  const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(
+    null
+  );
+
   return (
     <div>
       {fields.map((item, k) => {
         return (
-          <Box key={item.id} style={{ marginLeft: 20 }}>
+          <Box key={item.id} style={{ marginLeft: 20, marginTop: 10 }}>
             <Typography variant="subtitle2" fontWeight={"700"}>
               {" "}
               Answer {k + 1}
@@ -83,8 +88,11 @@ export default function AnswersFieldArray({
                   render={({ field: props }) => (
                     <Checkbox
                       {...props}
-                      checked={!!props.value}
-                      onChange={(e) => props.onChange(e.target.checked)}
+                      checked={!!props.value && correctAnswerIndex == k}
+                      onChange={(e) => {
+                        props.onChange(e.target.checked);
+                        setCorrectAnswerIndex(k);
+                      }}
                     />
                   )}
                 />

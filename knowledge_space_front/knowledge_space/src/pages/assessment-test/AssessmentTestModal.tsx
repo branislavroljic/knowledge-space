@@ -26,7 +26,7 @@ import { assessmentTestSchema } from "./schema";
 const ksId = 1;
 
 export default function AssessmentTestModal() {
-  const { isOpen, closeModal, shouldClose } = useAssessmentTestModalStore();
+  const { isOpen, closeModal } = useAssessmentTestModalStore();
   const [hasChanged, setHasChanged] = useState(false);
 
   const {
@@ -63,7 +63,7 @@ export default function AssessmentTestModal() {
     mutationFn: createAssessmentTest,
     onSuccess: () => {
       setHasChanged(true);
-      if (shouldClose) handleCloseModal(true);
+      handleCloseModal(true);
 
       reset();
     },

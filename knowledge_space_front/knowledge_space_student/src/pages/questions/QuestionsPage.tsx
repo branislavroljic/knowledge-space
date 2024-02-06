@@ -9,6 +9,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -23,10 +24,14 @@ import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
 import { ksGraphNodeToFlowNode, ksGraphToFlowEdge } from "./util";
 import EditableNode from "./EditableNode";
 import "reactflow/dist/style.css";
+import useAuthStore from "@stores/authStore";
+import HomeIcon from "@mui/icons-material/Home";
 
 export function QuestionsPage() {
   const params = useParams();
   const { state } = useLocation();
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   const assessmentTestId = useMemo(
     () => (params?.assessmentTestId ? +params?.assessmentTestId : 1),
@@ -49,13 +54,13 @@ export function QuestionsPage() {
     isLoading: isLoadingQuestions,
     isError,
   } = useQuery({
-    queryKey: ["questions", assessmentTestId],
+    queryKey: ["questions", assessmentTestId, user?.id],
     queryFn: async () => getAssessmentTestQuestions(assessmentTestId),
     enabled: !state?.assessmentTest?.completed,
   });
 
   const { data: realKsData, isLoading: isLoadingRealKsData } = useQuery({
-    queryKey: ["real_ks", assessmentTestId],
+    queryKey: ["real_ks", assessmentTestId, user?.id],
     queryFn: async () => getStudentRealKsGraphData(assessmentTestId),
     enabled: state?.assessmentTest?.completed,
   });
@@ -126,7 +131,6 @@ export function QuestionsPage() {
       params?.assessmentTestId &&
       answers !== prevAnswersRef.current
     ) {
-      // Trigger the mutation with the updated 'answers' array
       assessmentTestMutation.mutate({
         assessmentTestId: +params?.assessmentTestId,
         answers,
@@ -203,14 +207,24 @@ export function QuestionsPage() {
               flex: 1,
               flexDirection: "column",
               justifyContent: "center",
-              alignItems : 'center',
-              gap : 2
+              alignItems: "center",
+              gap: 2,
             }}
           >
-            <Typography variant="h4">Your Knowledge Space</Typography>
+            <Stack direction={"row"} gap={5}>
+              <Typography variant="h4">Your Knowledge Space</Typography>
+              <Button
+                startIcon={<HomeIcon />}
+                onClick={() => navigate("/")}
+              >
+                Go home
+              </Button>
+            </Stack>
             <ReactFlow
-              nodes={realKsData?.nodes.map((x) => ksGraphNodeToFlowNode(x))}
-              edges={realKsData?.edges.map((x) => ksGraphToFlowEdge(x))}
+              nodes={studentKsGraphData?.nodes.map((x) =>
+                ksGraphNodeToFlowNode(x)
+              )}
+              edges={studentKsGraphData?.edges.map((x) => ksGraphToFlowEdge(x))}
               nodeTypes={nodeTypes}
               style={{ flex: 1 }}
             >
