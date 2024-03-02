@@ -9,8 +9,6 @@ import { useParams } from "react-router-dom";
 export default function StatisticsPage() {
   const params = useParams();
 
-  console.log(params);
-
   const { data: statisticsData, isLoading } = useQuery({
     queryKey: ["statistics", params.assessmentTestId],
     queryFn: () =>

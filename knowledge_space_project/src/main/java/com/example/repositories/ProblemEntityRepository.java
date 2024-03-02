@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProblemEntityRepository extends JpaRepository<ProblemEntity, Integer> {
-  List<ProblemEntity> findAllByKnowledgeSpaceId(Integer id);
+//  List<ProblemEntity> findAllByKnowledgeSpaceId(Integer id);
 
 }

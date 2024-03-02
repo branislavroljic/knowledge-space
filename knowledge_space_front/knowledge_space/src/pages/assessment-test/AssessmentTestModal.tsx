@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   AssessmentTest,
@@ -9,10 +9,13 @@ import useNotifiedMutation from "../../hooks/useNotifiedMutation";
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  Card,
+  CardActions,
+  CardContent,
+  // Dialog,
+  // DialogActions,
+  // DialogContent,
+  // DialogTitle,
   Divider,
   TextField,
 } from "@mui/material";
@@ -22,12 +25,14 @@ import QuestionsFieldArray from "./QuestionsFieldArray";
 import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { assessmentTestSchema } from "./schema";
+import Spinner from "@ui/view/spinner/Spinner";
+interface AssessmentTestModalProps {
+  ksId: number; // Adjust the type according to your requirements
+}
 
-const ksId = 1;
-
-export default function AssessmentTestModal() {
+const AssessmentTestModal: React.FC<AssessmentTestModalProps> = ({ ksId }) => {
   const { isOpen, closeModal } = useAssessmentTestModalStore();
-  const [hasChanged, setHasChanged] = useState(false);
+  // const [hasChanged, setHasChanged] = useState(false);
 
   const {
     register,
@@ -35,16 +40,15 @@ export default function AssessmentTestModal() {
     reset,
     control,
     formState: { errors, isValid },
-    getValues,
   } = useForm<AssessmentTest>({
     resolver: zodResolver(assessmentTestSchema),
   });
 
-  const { data: problems } = useQuery({
+  const { data: problems, isLoading } = useQuery({
     queryKey: ["problems", ksId],
     queryFn: async () => {
       if (ksId !== undefined) {
-        return getKSProblems(1);
+        return getKSProblems(ksId);
       }
       return null;
     },
@@ -62,7 +66,7 @@ export default function AssessmentTestModal() {
   const assessmentTestMutation = useNotifiedMutation({
     mutationFn: createAssessmentTest,
     onSuccess: () => {
-      setHasChanged(true);
+      // setHasChanged(true);
       handleCloseModal(true);
 
       reset();
@@ -78,20 +82,24 @@ export default function AssessmentTestModal() {
 
   const onError = (errors: any, e: any) => console.log(errors, e);
 
+  if (isLoading) return <Spinner />;
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={() => handleCloseModal(hasChanged)}
-      fullWidth={true}
-      maxWidth={"sm"}
-    >
-      <DialogTitle>Test</DialogTitle>
+    // <Dialog
+    //   open={isOpen}
+    //   onClose={() => handleCloseModal(hasChanged)}
+    //   fullWidth={true}
+    //   maxWidth={"sm"}
+    // >
+    //   <DialogTitle>Test</DialogTitle>
+    <Card sx={{ maxHeight: "90vh", overflow: "auto" }}>
       <Box
         component="form"
         onSubmit={handleSubmit(createAssessmentTest, onError)}
         sx={{ mt: 3 }}
       >
-        <DialogContent>
+        {/* <DialogContent> */}
+        <CardContent>
           <input
             type="hidden"
             {...register("id", {
@@ -121,9 +129,11 @@ export default function AssessmentTestModal() {
           <QuestionsFieldArray
             {...{ control: control, errors: errors, problems }}
           />
-        </DialogContent>
-        <DialogActions>
-          <Button
+        </CardContent>
+        {/* </DialogContent> */}
+        {/* <DialogActions> */}
+        <CardActions sx={{ display: "flex", justifyContent: "center" }}>
+          {/* <Button
             onClick={() => {
               handleCloseModal(hasChanged);
             }}
@@ -131,13 +141,10 @@ export default function AssessmentTestModal() {
             variant="contained"
           >
             {"Cancel"}
-          </Button>
+          </Button> */}
           <Button
             type="submit"
             onClick={() => {
-              console.log(isValid);
-              console.log(JSON.stringify(errors));
-              console.log(getValues());
               handleSubmit(saveAssessmentTest, onError);
             }}
             color="primary"
@@ -145,8 +152,12 @@ export default function AssessmentTestModal() {
           >
             {"Save"}
           </Button>
-        </DialogActions>
+        </CardActions>
+        {/* </DialogActions> */}
       </Box>
-    </Dialog>
+    </Card>
+    // </Dialog>
   );
-}
+};
+
+export default AssessmentTestModal;

@@ -75,7 +75,7 @@ export default function KSGraphPage() {
   const openAssessmentTestModal = useAssessmentTestModalStore(
     (state) => state.openModal
   );
-  const { data, refetch : refetchKnowledgeSpaceData } = useQuery({
+  const { data, refetch: refetchKnowledgeSpaceData } = useQuery({
     queryKey: ["knowledge_spaces", knowledgeSpaceId],
     queryFn: async () => {
       if (knowledgeSpaceId !== undefined) {
@@ -84,7 +84,6 @@ export default function KSGraphPage() {
       return null;
     },
     enabled: knowledgeSpaceId !== undefined,
-    
   });
 
   const { data: assessmentTests, refetch: refetchAssessmentTests } = useQuery({
@@ -335,7 +334,7 @@ export default function KSGraphPage() {
   return (
     <>
       <PageContainer title="KsGraph">
-        <AssessmentTestModal />
+        {/* <AssessmentTestModal /> */}
         <KsGraphNodeModal setNodes={setNodes} />
         <Box sx={{ display: "flex", gap: 3, paddingTop: 2 }}>
           <Box
@@ -360,7 +359,7 @@ export default function KSGraphPage() {
                 }}
                 disablePortal
                 disableClearable
-                options={knowledgeSpaces}
+                options={knowledgeSpaces.filter((ks) => !ks.isReal)}
                 getOptionLabel={(option) => option.name}
                 sx={{ width: 300 }}
                 renderInput={(params) => (
@@ -384,7 +383,7 @@ export default function KSGraphPage() {
                   alignItems: "center",
                 }}
               >
-                <Button
+                {/* <Button
                   disabled={!knowledgeSpaceId}
                   onClick={() =>
                     openAssessmentTestModal(
@@ -396,7 +395,7 @@ export default function KSGraphPage() {
                   color="success"
                 >
                   Create test
-                </Button>
+                </Button> */}
                 <Button
                   disabled={!nextUndoAction}
                   onClick={() =>
@@ -425,7 +424,7 @@ export default function KSGraphPage() {
                       nextRedoAction
                     )
                   }
-                  color='warning'
+                  color="warning"
                 >
                   Redo
                 </Button>

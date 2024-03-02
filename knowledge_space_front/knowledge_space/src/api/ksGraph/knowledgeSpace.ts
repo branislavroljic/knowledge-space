@@ -9,7 +9,10 @@ import {
 const baseUrl = new URL("ks", import.meta.env.VITE_API_URL);
 const baseUrlWithSlash = new URL("ks/", import.meta.env.VITE_API_URL);
 
-export type KnowledgeSpace = SelectInput;
+export type KnowledgeSpace = SelectInput & {
+  assessmentTest?: string;
+  isReal?: boolean;
+};
 
 export type AssessmentTest = SelectInput & {
   knowledgeSpace: string;
@@ -21,7 +24,17 @@ export type Report = {
 };
 
 export function getKnowledgeSpaces(): Promise<KnowledgeSpace[]> {
-  return get(baseUrl);
+  return get(new URL("all", baseUrlWithSlash));
+}
+
+export function getPaginatedKnowledgeSpaces(
+  pagination: PageRequest
+): Promise<Page<KnowledgeSpace>> {
+  return get(addPaginationParams(baseUrl, pagination));
+}
+
+export function generateRealKnowledgeSpace(assessmentTestId: number) {
+  return get(new URL("real_ks/generate/" + assessmentTestId, baseUrlWithSlash));
 }
 
 export function getAssessmentTests(

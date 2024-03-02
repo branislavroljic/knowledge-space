@@ -20,7 +20,7 @@ public abstract class ProblemMapper {
   @Autowired KnowledgeSpaceEntityRepository knowledgeSpaceEntityRepository;
 
   @BeanMapping(qualifiedByName = "problemEntityToProblem")
-  @Mapping(target = "knowledgeSpaceId", source = "knowledgeSpace.id")
+//  @Mapping(target = "knowledgeSpaceId", source = "knowledgeSpace.id")
   public abstract Problem mapProblemEntityToProblem(ProblemEntity problemEntity);
 
   @Named("problemEntityToProblem")
@@ -29,18 +29,18 @@ public abstract class ProblemMapper {
   @BeanMapping(qualifiedByName = "problemProblemEntity")
   public abstract ProblemEntity mapProblemToProblemEntity(Problem problem);
 
-  @Named("problemProblemEntity")
-  @AfterMapping
-  public void doAfterMappingProblemToProblemEntity(
-      Problem problem, @MappingTarget ProblemEntity problemEntity) {
-    if (problem.getKnowledgeSpaceId() != null) {
-      KnowledgeSpaceEntity knowledgeSpaceEntity =
-          knowledgeSpaceEntityRepository
-              .findById(problem.getKnowledgeSpaceId())
-              .orElseThrow(NotFoundException::new);
-      problemEntity.setKnowledgeSpace(knowledgeSpaceEntity);
-    }
-  }
+//  @Named("problemProblemEntity")
+//  @AfterMapping
+//  public void doAfterMappingProblemToProblemEntity(
+//      Problem problem, @MappingTarget ProblemEntity problemEntity) {
+//    if (problem.getKnowledgeSpaceId() != null) {
+//      KnowledgeSpaceEntity knowledgeSpaceEntity =
+//          knowledgeSpaceEntityRepository
+//              .findById(problem.getKnowledgeSpaceId())
+//              .orElseThrow(NotFoundException::new);
+//      problemEntity.setKnowledgeSpace(knowledgeSpaceEntity);
+//    }
+//  }
 
   @Named("updateProblemEntityFromProblem")
   @Mapping(target = "id", ignore = true)

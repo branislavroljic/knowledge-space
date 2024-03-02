@@ -2,6 +2,7 @@ package com.example.service;
 
 import com.example.mapper.EdgeMapper;
 import com.example.mapper.ProblemMapper;
+import com.example.model.dto.KnowledgeSpaceGraph;
 import com.example.model.entity.EdgeEntity;
 import com.example.model.entity.ProblemEntity;
 import com.example.model.response.auth.KnowledgeSpaceGraphData;
@@ -23,8 +24,6 @@ import reactor.core.publisher.Mono;
 public class KSFlaskService {
 
   private final WebClient webClient;
-  private final ProblemMapper problemMapper;
-  private final EdgeMapper edgeMapper;
 
   public Mono<int[][]> getIITAImplications(int[][] matrix) {
     HttpHeaders headers = new HttpHeaders();
@@ -39,7 +38,7 @@ public class KSFlaskService {
         .bodyToMono(int[][].class);
   }
 
-  public KnowledgeSpaceGraphData constructRealKnowledgeSpace(
+  public KnowledgeSpaceGraph constructRealKnowledgeSpace(
       int[][] iitaResult, List<ProblemEntity> sortedProblems) {
     Set<ProblemEntity> calculatedNodes = new HashSet<>();
     List<EdgeEntity> calculatedEdges = new ArrayList<>();
@@ -66,9 +65,13 @@ public class KSFlaskService {
       else calculatedEdges.add(iitaEdge);
     }
 
-    return KnowledgeSpaceGraphData.builder()
-        .nodes(problemMapper.mapProblemEntitiesToProblems(new ArrayList<>(calculatedNodes)))
-        .edges(edgeMapper.mapEdgeEntitiesToEdges(calculatedEdges))
+    //    return KnowledgeSpaceGraphData.builder()
+    //        .nodes(problemMapper.mapProblemEntitiesToProblems(new ArrayList<>(calculatedNodes)))
+    //        .edges(edgeMapper.mapEdgeEntitiesToEdges(calculatedEdges))
+    //        .build();
+    return KnowledgeSpaceGraph.builder()
+        .nodes(new ArrayList<>(calculatedNodes))
+        .edges(calculatedEdges)
         .build();
   }
 }

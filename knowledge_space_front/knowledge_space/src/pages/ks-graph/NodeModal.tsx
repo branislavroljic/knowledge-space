@@ -129,6 +129,7 @@ export default function KsGraphNodeModal({ setNodes }: KsGraphNodeModalProps) {
         updateMutation.mutate(newItem);
       }
     }
+    closeModal();
   };
 
   return (

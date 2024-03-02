@@ -22,7 +22,7 @@ const Menuitems = () =>
   [
     {
       navlabel: true,
-      subheader: "KS graph",
+      subheader: "Knowledge space graph",
     },
     {
       id: uniqueId(),
@@ -35,6 +35,12 @@ const Menuitems = () =>
       title: "Assessment tests",
       icon: QuizIcon,
       href: "/assessment_tests",
+    },
+    {
+      id: uniqueId(),
+      title: "Knowledge spaces",
+      icon: QuizIcon,
+      href: "/knowledge_spaces",
     },
   ] as MenuitemsType[];
 

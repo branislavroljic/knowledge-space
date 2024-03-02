@@ -1,0 +1,9 @@
+1. Uvod - problem koji se rjesava i motivacija za njega - klasicno bodovanje testoba nije dovoljno ekspresivno i tyreba na m neki detaljniji opis ucenikovog znanja
+znaci sta je ambicija - da se napravi platforma za testiranjre
+2. related work - opisati teoriju prostora znanja i softverska rjesenja za testiranje na bazi KS-a
+3. moje rjesenje - predstaviti model podataka, arhitekturu aplikacije, funkcionalnosti, prikazati sta moze itd, tehnologije, flask odvojeno
+4. zakljucak - opisati ogranicennja, pravce za dalji radi itd. 
+
+
+sta hoce za projekat:
+- Da ima da se na listi testova klikne "generisi Real KS" i onda u listi KS-ova(koju trebam napraviti) mogu i iz tog RealKS-a da napravim test

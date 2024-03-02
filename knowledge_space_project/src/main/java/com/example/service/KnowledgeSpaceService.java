@@ -2,16 +2,19 @@ package com.example.service;
 
 import com.example.mapper.AssessmentTestMapper;
 import com.example.mapper.EdgeMapper;
+import com.example.mapper.KnowledgeSpaceMapper;
 import com.example.mapper.ProblemMapper;
 import com.example.mapper.QuestionMapper;
 import com.example.mapper.ResponseMapper;
 import com.example.model.dto.AssessmentTestProfessor;
 import com.example.model.dto.Edge;
+import com.example.model.dto.KnowledgeSpace;
 import com.example.model.dto.Problem;
 import com.example.model.entity.AssessmentTestEntity;
 import com.example.model.entity.AssessmentTestQuestionEntity;
 import com.example.model.entity.EdgeEntity;
 import com.example.model.entity.KnowledgeSpaceEntity;
+import com.example.model.entity.KnowledgeSpaceProblemEntity;
 import com.example.model.entity.ProblemEntity;
 import com.example.model.entity.QuestionEntity;
 import com.example.model.entity.ResponseEntity;
@@ -26,6 +29,7 @@ import com.example.repositories.AssessmentTestEntityRepository;
 import com.example.repositories.AssessmentTestQuestionEntityRepository;
 import com.example.repositories.EdgeEntityRepository;
 import com.example.repositories.KnowledgeSpaceEntityRepository;
+import com.example.repositories.KnowledgeSpaceProblemEntityRepository;
 import com.example.repositories.ProblemEntityRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -51,15 +55,19 @@ public class KnowledgeSpaceService {
   private final KnowledgeSpaceEntityRepository knowledgeSpaceEntityRepository;
   private final QuestionMapper questionMapper;
   private final ResponseMapper responseMapper;
+  private final KnowledgeSpaceMapper knowledgeSpaceMapper;
   private final AssessmentTestQuestionEntityRepository assessmentTestQuestionEntityRepository;
   private final AssessmentTestMapper assessmentTestMapper;
   private final AssessmentTestEntityRepository assessmentTestEntityRepository;
-  public List<KnowledgeSpaceEntity> getKnowledgeSpaces() {
-    return knowledgeSpaceEntityRepository.findAll();
+  private final KnowledgeSpaceProblemEntityRepository ksProblemEntityRepository;
+
+  public List<KnowledgeSpace> getKnowledgeSpaces() {
+    return knowledgeSpaceMapper.mapKnowledgeSpaceEntitiesToKnowledgeSpaces(
+        knowledgeSpaceEntityRepository.findAll());
   }
 
   public KnowledgeSpaceGraphData getKSGraphData(Integer id) {
-    List<ProblemEntity> nodes = problemEntityRepository.findAllByKnowledgeSpaceId(id);
+    List<ProblemEntity> nodes = getProblemsForKS(id);
     List<EdgeEntity> edges =
         edgeEntityRepository.findBySourceProblemInOrDestinationProblemIn(nodes, nodes);
 
@@ -70,7 +78,7 @@ public class KnowledgeSpaceService {
   }
 
   public List<Problem> getKSProblems(Integer ksId) {
-    List<ProblemEntity> problemEntities = problemEntityRepository.findAllByKnowledgeSpaceId(ksId);
+    List<ProblemEntity> problemEntities = getProblemsForKS(ksId);
     return problemMapper.mapProblemEntitiesToProblems(problemEntities);
   }
 
@@ -79,9 +87,16 @@ public class KnowledgeSpaceService {
         knowledgeSpaceEntityRepository.findById(ksId).orElseThrow(NotFoundException::new);
     ProblemEntity problemEntity = problemMapper.mapProblemToProblemEntity(problem);
     problemEntity.setId(0);
-    problemEntity.setKnowledgeSpace(knowledgeSpaceEntity);
-    problemEntityRepository.save(problemEntity);
-    return problemMapper.mapProblemEntityToProblem(problemEntity);
+
+    KnowledgeSpaceProblemEntity knowledgeSpaceProblemEntity = new KnowledgeSpaceProblemEntity();
+    knowledgeSpaceProblemEntity.setKnowledgeSpace(knowledgeSpaceEntity);
+    knowledgeSpaceProblemEntity.setProblem(problemEntity);
+    knowledgeSpaceProblemEntity.setId(0);
+    ksProblemEntityRepository.save(knowledgeSpaceProblemEntity);
+
+    Problem newProblem = problemMapper.mapProblemEntityToProblem(problemEntity);
+    newProblem.setKnowledgeSpaceId(ksId);
+    return newProblem;
   }
 
   public Problem updateProblem(Problem problem) {
@@ -180,6 +195,22 @@ public class KnowledgeSpaceService {
     assessmentTestQuestionEntityRepository.saveAll(assessmentTestQuestionEntities);
   }
 
+  public PageResponse<KnowledgeSpace> getPaginatedKnowledgeSpaces(PageInfoRequest request) {
+    Pageable pageable = PageRequest.of(request.getPageIndex(), request.getPageSize());
+
+    Page<KnowledgeSpaceEntity> knowledgeSpaceEntityPage =
+        knowledgeSpaceEntityRepository.findAll(pageable);
+
+    List<KnowledgeSpace> knowledgeSpaces =
+        knowledgeSpaceMapper.mapKnowledgeSpaceEntitiesToKnowledgeSpaces(
+            knowledgeSpaceEntityPage.getContent());
+
+    return PageResponse.<KnowledgeSpace>builder()
+        .rows(knowledgeSpaces)
+        .totalCount(knowledgeSpaceEntityPage.getTotalElements())
+        .build();
+  }
+
   public PageResponse<AssessmentTestProfessor> getAssessmentTests(PageInfoRequest request) {
     Pageable pageable = PageRequest.of(request.getPageIndex(), request.getPageSize());
 
@@ -205,6 +236,11 @@ public class KnowledgeSpaceService {
         assessmentTestEntities);
   }
 
+  private List<ProblemEntity> getProblemsForKS(Integer ksId) {
+    return ksProblemEntityRepository.findAllByKnowledgeSpaceId(ksId).stream()
+        .map(KnowledgeSpaceProblemEntity::getProblem)
+        .toList();
+  }
 
   //  private void generateGraph(Graph g, HashMap<Long, Node> nodes, String edgeStr) {
   //    String node1_id = edgeStr.split("\\.")[0];

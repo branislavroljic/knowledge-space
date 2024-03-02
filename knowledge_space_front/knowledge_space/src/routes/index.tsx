@@ -4,6 +4,8 @@ import queryClient from "../query-client";
 import { getKnowledgeSpaces } from "@api/ksGraph/knowledgeSpace";
 import { QuestionsPage } from "@pages/questions/QuestionsPage";
 import StatisticsPage from "@pages/statistics/StatisticsPage";
+import KnowledgeSpacePage from "@pages/knowledge-spaces/KnowledgeSpacePage";
+import KnowledgeSpaceGraph from "@pages/knowledge-spaces/KnowledgeSpaceGraph";
 
 const FullLayout = React.lazy(() => import("@layout/full/FullLayout"));
 const ErrorPage = React.lazy(() => import("@pages/error/ErrorPage"));
@@ -59,6 +61,23 @@ const browserConfig = createBrowserRouter([
                 id: "statistics",
                 path: ":assessmentTestId/statistics",
                 element: <StatisticsPage />,
+                errorElement: <ErrorPage />,
+              },
+            ],
+          },
+          {
+            id: "knowledge_spaces",
+            path: "knowledge_spaces",
+            children: [
+              {
+                index: true,
+                element: <KnowledgeSpacePage />,
+                errorElement: <ErrorPage />,
+              },
+              {
+                id: "graph",
+                path: ":knowledgeSpaceId/graph",
+                element: <KnowledgeSpaceGraph />,
                 errorElement: <ErrorPage />,
               },
             ],

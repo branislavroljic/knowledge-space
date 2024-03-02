@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.model.dto.AssessmentTestProfessor;
 import com.example.model.dto.Edge;
+import com.example.model.dto.KnowledgeSpace;
 import com.example.model.dto.Problem;
 import com.example.model.dto.Report;
 import com.example.model.entity.KnowledgeSpaceEntity;
@@ -34,7 +35,13 @@ public class KnowledgeSpaceController {
   private final AssessmentTestService assessmentTestService;
 
   @GetMapping
-  public ResponseEntity<List<KnowledgeSpaceEntity>> getKnowledgeSpaces() {
+  public ResponseEntity<PageResponse<KnowledgeSpace>> getPaginatedKnowledgeSpaces(
+      PageInfoRequest request) {
+    return ResponseEntity.ok(knowledgeSpaceService.getPaginatedKnowledgeSpaces(request));
+  }
+
+  @GetMapping("/all")
+  public ResponseEntity<List<KnowledgeSpace>> getKnowledgeSpaces() {
     return ResponseEntity.ok(knowledgeSpaceService.getKnowledgeSpaces());
   }
 
@@ -101,7 +108,16 @@ public class KnowledgeSpaceController {
   public ResponseEntity<KnowledgeSpaceGraphData> getRealKnowledgeSpace(
       @PathVariable Integer assessment_test_id) {
 
-    return ResponseEntity.ok(assessmentTestService.getRealKnowledgeSpace(assessment_test_id, null));
+    return ResponseEntity.ok(
+        assessmentTestService.getRealKnowledgeSpaceDTO(assessment_test_id, null));
+  }
+
+  @GetMapping("/real_ks/generate/{assessment_test_id}")
+  public ResponseEntity<KnowledgeSpaceGraphData> generateRealKnowledgeSpace(
+      @PathVariable Integer assessment_test_id) {
+
+    assessmentTestService.generateRealKnowledgeSpace(assessment_test_id);
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/statistics/{assessment_test_id}")

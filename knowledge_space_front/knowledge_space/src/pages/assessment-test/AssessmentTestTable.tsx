@@ -20,13 +20,16 @@ import defaultColumns from "./columns";
 import { PageRequest } from "@api/utils";
 import {
   AssessmentTest,
+  generateRealKnowledgeSpace,
   getAssessmentTests,
 } from "@api/ksGraph/knowledgeSpace";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
-import BarChartIcon from '@mui/icons-material/BarChart';
+import BarChartIcon from "@mui/icons-material/BarChart";
 import { getUserFromStorage } from "@api/auth";
 import { useNavigate } from "react-router-dom";
 import QuizIcon from "@mui/icons-material/Quiz";
+import useNotifiedMutation from "../../hooks/useNotifiedMutation";
+import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
 
 export default function AssessmentTestTable() {
   const theme = useTheme();
@@ -48,6 +51,11 @@ export default function AssessmentTestTable() {
 
       return getAssessmentTests(pageRequest);
     },
+  });
+
+  const realKSMutation = useNotifiedMutation({
+    mutationFn: generateRealKnowledgeSpace,
+    showSuccessNotification : true
   });
 
   const columns = useMemo<MRT_ColumnDef<AssessmentTest>[]>(
@@ -105,9 +113,7 @@ export default function AssessmentTestTable() {
       <IconButton
         color="primary"
         onClick={(e) => {
-          navigate("/assessment_tests/" + item.id + "/questions", {
-            state: { assessmentTest: item },
-          });
+          generateRealKnowledgeSpace(item.id);
           e.stopPropagation();
         }}
       >
@@ -126,6 +132,21 @@ export default function AssessmentTestTable() {
         }}
       >
         <BarChartIcon />
+      </IconButton>
+    </Tooltip>
+  );
+
+  const generateRealKsButton = (item: AssessmentTest, key: string) => (
+    <Tooltip arrow title={"Generate Real KS"} key={key}>
+      <IconButton
+        color="secondary"
+        onClick={(e) => {
+          realKSMutation.mutate(item.id);
+          // generateQTI(item.id);
+          e.stopPropagation();
+        }}
+      >
+        <AccountTreeRoundedIcon />
       </IconButton>
     </Tooltip>
   );
@@ -162,11 +183,15 @@ export default function AssessmentTestTable() {
         )}
         {questionsButton(
           row.original as AssessmentTest,
-          (row.original as AssessmentTest).id + "_" + "qti"
+          (row.original as AssessmentTest).id + "_" + "questions"
         )}
         {statisticsButton(
           row.original as AssessmentTest,
           (row.original as AssessmentTest).id + "_" + "statistics"
+        )}
+        {generateRealKsButton(
+          row.original as AssessmentTest,
+          (row.original as AssessmentTest).id + "_" + "realKS"
         )}
       </Box>
     ),

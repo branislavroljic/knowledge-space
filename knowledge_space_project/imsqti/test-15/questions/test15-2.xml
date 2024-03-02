@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?> <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0_v1p0.xsd" adaptive="false" time-dependent="false" identifier="assessmentTest-15-2" title="Question 2" >
+	<qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
+		<qti-correct-response>
+			<qti-value>15</qti-value>
+		</qti-correct-response>
+	</qti-response-declaration>
+	<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"/>
+	<qti-item-body>
+		<qti-choice-interaction max-choices="1" response-identifier="RESPONSE" shuffle="true"><qti-prompt>3*5?</qti-prompt>
+<qti-simple-choice fixed="false" identifier="22">22</qti-simple-choice>
+<qti-simple-choice fixed="false" identifier="15">15</qti-simple-choice>
+<qti-simple-choice fixed="false" identifier="12">12</qti-simple-choice>
+</qti-choice-interaction>
+</qti-item-body>
+<qti-response-processing
+template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct"/>
+</qti-assessment-item>
