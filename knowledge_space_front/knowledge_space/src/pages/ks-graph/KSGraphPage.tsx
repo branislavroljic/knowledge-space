@@ -339,7 +339,7 @@ export default function KSGraphPage() {
         <Box sx={{ display: "flex", gap: 3, paddingTop: 2 }}>
           <Box
             sx={{
-              minHeight: "90vh",
+              minHeight: "100vh",
               display: "flex",
               flexDirection: "column",
               flex: 1.1,

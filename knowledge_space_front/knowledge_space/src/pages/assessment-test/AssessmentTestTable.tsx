@@ -30,6 +30,7 @@ import { useNavigate } from "react-router-dom";
 import QuizIcon from "@mui/icons-material/Quiz";
 import useNotifiedMutation from "../../hooks/useNotifiedMutation";
 import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
+import PeopleIcon from "@mui/icons-material/People";
 
 export default function AssessmentTestTable() {
   const theme = useTheme();
@@ -55,7 +56,7 @@ export default function AssessmentTestTable() {
 
   const realKSMutation = useNotifiedMutation({
     mutationFn: generateRealKnowledgeSpace,
-    showSuccessNotification : true
+    showSuccessNotification: true,
   });
 
   const columns = useMemo<MRT_ColumnDef<AssessmentTest>[]>(
@@ -113,7 +114,9 @@ export default function AssessmentTestTable() {
       <IconButton
         color="primary"
         onClick={(e) => {
-          generateRealKnowledgeSpace(item.id);
+          navigate("/assessment_tests/" + item.id + "/questions", {
+            state: { assessmentTest: item },
+          });
           e.stopPropagation();
         }}
       >
@@ -132,6 +135,22 @@ export default function AssessmentTestTable() {
         }}
       >
         <BarChartIcon />
+      </IconButton>
+    </Tooltip>
+  );
+
+  const studentsButton = (item: AssessmentTest, key: string) => (
+    <Tooltip arrow title={"Students who completed test"} key={key}>
+      <IconButton
+        color="primary"
+        onClick={(e) => {
+          navigate("/assessment_tests/" + item.id + "/students", {
+            state: { assessmentTest: item },
+          });
+          e.stopPropagation();
+        }}
+      >
+        <PeopleIcon />
       </IconButton>
     </Tooltip>
   );
@@ -192,6 +211,10 @@ export default function AssessmentTestTable() {
         {generateRealKsButton(
           row.original as AssessmentTest,
           (row.original as AssessmentTest).id + "_" + "realKS"
+        )}
+        {studentsButton(
+          row.original as AssessmentTest,
+          (row.original as AssessmentTest).id + "_" + "students"
         )}
       </Box>
     ),

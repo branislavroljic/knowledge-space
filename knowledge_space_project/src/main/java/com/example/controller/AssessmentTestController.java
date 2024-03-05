@@ -2,13 +2,13 @@ package com.example.controller;
 
 import com.example.model.dto.AssessmentTest;
 import com.example.model.dto.Question;
-import com.example.model.dto.Response;
+import com.example.model.dto.StudentAssessmentTest;
+import com.example.model.paging.PageInfoRequest;
+import com.example.model.paging.PageResponse;
 import com.example.model.request.UserAnswerRequest;
 import com.example.model.response.auth.KnowledgeSpaceGraphData;
-import com.example.model.response.auth.UserTestResults;
 import com.example.security.JwtUser;
 import com.example.service.AssessmentTestService;
-import com.example.service.KnowledgeSpaceService;
 import com.example.service.QTIService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -64,5 +64,11 @@ public class AssessmentTestController {
   @GetMapping("/{id}/imsqti")
   public ResponseEntity<byte[]> generateQti(@PathVariable Integer id) {
     return ResponseEntity.ok(qtiService.generateQTI(id));
+  }
+
+  @GetMapping("{id}/students")
+  public ResponseEntity<PageResponse<StudentAssessmentTest>> getAssessmentTestStudents(
+      @PathVariable Integer id, PageInfoRequest request) {
+    return ResponseEntity.ok(assessmentTestService.getAssessmentTestStudents(id, request));
   }
 }

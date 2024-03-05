@@ -1,4 +1,4 @@
-import { get, post } from "@api/utils";
+import { Page, PageRequest, addPaginationParams, get, post } from "@api/utils";
 
 const baseUrl = new URL("ks/", import.meta.env.VITE_API_URL);
 const assessmentTestBaseUrl = new URL(
@@ -28,6 +28,13 @@ export type Problem = {
   name: string;
 };
 
+export type StudentAssessmentTest = {
+  email: string;
+  id: number;
+  numOfCorrectAnswers: number;
+  totalNumOfAnswers: number;
+};
+
 export function createAssessmentTest(assessmentTest: AssessmentTest) {
   return post(
     new URL(assessmentTest.id + "/assessment_tests", baseUrl),
@@ -45,4 +52,16 @@ export function getKSProblems(ksId?: number): Promise<Problem> {
 
 export function generateQTI(id?: number) {
   return get(new URL(id + "/imsqti", assessmentTestBaseUrl));
+}
+
+export function getAssessmentTestStudents(
+  pagination: PageRequest,
+  id?: number
+): Promise<Page<StudentAssessmentTest>> {
+  return get(
+    addPaginationParams(
+      new URL(id + "/students", assessmentTestBaseUrl),
+      pagination
+    )
+  );
 }

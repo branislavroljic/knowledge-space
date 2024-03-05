@@ -5,9 +5,11 @@ import com.example.mapper.EdgeMapper;
 import com.example.mapper.ProblemMapper;
 import com.example.mapper.QuestionMapper;
 import com.example.model.dto.AssessmentTest;
+import com.example.model.dto.AssessmentTestProfessor;
 import com.example.model.dto.KnowledgeSpaceGraph;
 import com.example.model.dto.Question;
 import com.example.model.dto.Report;
+import com.example.model.dto.StudentAssessmentTest;
 import com.example.model.entity.AssessmentTestEntity;
 import com.example.model.entity.AssessmentTestQuestionEntity;
 import com.example.model.entity.EdgeEntity;
@@ -20,6 +22,8 @@ import com.example.model.entity.UserAssessmentTestEntity;
 import com.example.model.entity.UserAssessmentTestResponseEntity;
 import com.example.model.entity.UserEntity;
 import com.example.model.exception.NotFoundException;
+import com.example.model.paging.PageInfoRequest;
+import com.example.model.paging.PageResponse;
 import com.example.model.request.UserAnswerRequest;
 import com.example.model.response.auth.KnowledgeSpaceGraphData;
 import com.example.repositories.AssessmentTestEntityRepository;
@@ -40,9 +44,13 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -72,11 +80,25 @@ public class AssessmentTestService {
     List<AssessmentTest> assessmentTests =
         assessmentTestMapper.mapAssessmentTestEntitiesToAssessmentTests(
             assessmentTestEntityRepository.findAll());
+
     assessmentTests.forEach(
-        assessmentTest ->
-            assessmentTest.setCompleted(
-                userAssessmentTestEntityRepository.existsByUserIdAndAssessmentTestId(
-                    loggedInUser.getId(), assessmentTest.getId())));
+        assessmentTest -> {
+          Optional<UserAssessmentTestEntity> userAssessmentTest =
+              userAssessmentTestEntityRepository.findByUserIdAndAssessmentTestId(
+                  loggedInUser.getId(), assessmentTest.getId());
+          if (userAssessmentTest.isPresent()) {
+
+            Integer totalNumOfAnswers = userAssessmentTest.get().getResponseEntities().size();
+            Integer numOfCorrectAnswers =
+                Math.toIntExact(
+                    userAssessmentTest.get().getResponseEntities().stream()
+                        .filter(r -> r.getResponse().isCorrect())
+                        .count());
+            assessmentTest.setCompleted(true);
+            assessmentTest.setTotalNumOfAnswers(totalNumOfAnswers);
+            assessmentTest.setNumOfCorrectAnswers(numOfCorrectAnswers);
+          }
+        });
     return assessmentTests;
   }
 
@@ -369,6 +391,42 @@ public class AssessmentTestService {
 
   public List<Report> getStatistics(Integer assessmentTestId) {
     return assessmentTestEntityRepository.getStatistics(assessmentTestId);
+  }
+
+  public PageResponse<StudentAssessmentTest> getAssessmentTestStudents(
+      Integer assessmentTestId, PageInfoRequest request) {
+    AssessmentTestEntity assessmentTestEntity =
+        assessmentTestEntityRepository
+            .findById(assessmentTestId)
+            .orElseThrow(NotFoundException::new);
+
+    Pageable pageable = PageRequest.of(request.getPageIndex(), request.getPageSize());
+
+    Page<UserAssessmentTestEntity> userAssessmentTestEntitiesPage =
+        userAssessmentTestEntityRepository.findAllByAssessmentTest(assessmentTestEntity, pageable);
+
+    List<StudentAssessmentTest> assessmentTestStudentsList = new ArrayList<>();
+    for (UserAssessmentTestEntity userAssessmentTest :
+        userAssessmentTestEntitiesPage.getContent()) {
+      Integer totalNumOfAnswers = userAssessmentTest.getResponseEntities().size();
+      Integer numOfCorrectAnswers =
+          Math.toIntExact(
+              userAssessmentTest.getResponseEntities().stream()
+                  .filter(r -> r.getResponse().isCorrect())
+                  .count());
+      StudentAssessmentTest studentAssessmentTest =
+          StudentAssessmentTest.builder()
+              .id(userAssessmentTest.getUser().getId())
+              .email(userAssessmentTest.getUser().getEmail())
+              .totalNumOfAnswers(totalNumOfAnswers)
+              .numOfCorrectAnswers(numOfCorrectAnswers)
+              .build();
+      assessmentTestStudentsList.add(studentAssessmentTest);
+    }
+    return PageResponse.<StudentAssessmentTest>builder()
+        .rows(assessmentTestStudentsList)
+        .totalCount(userAssessmentTestEntitiesPage.getTotalElements())
+        .build();
   }
 
   private void traverseAndAddToTree(

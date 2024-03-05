@@ -29,6 +29,21 @@ const defaultAssessmentTestsColumns = () =>
         align: "center",
       },
     },
+    {
+      accessorFn: (row) =>
+        row.completed
+          ? `${row.numOfCorrectAnswers}/${row.totalNumOfAnswers}`
+          : "N/A",
+      header: "Result",
+      muiTableHeadCellProps: {
+        align: "center",
+      },
+      muiTableBodyCellProps: {
+        align: "center",
+      },
+      enableColumnFilter: false,
+      enableSorting: false,
+    },
   ] as MRT_ColumnDef<AssessmentTest>[];
 
 export default defaultAssessmentTestsColumns;

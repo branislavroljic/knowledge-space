@@ -17,6 +17,7 @@ interface MenuitemsType {
 
 import QuizIcon from "@mui/icons-material/Quiz";
 import { AccountTree } from "@mui/icons-material";
+import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt";
 
 const Menuitems = () =>
   [
@@ -39,7 +40,7 @@ const Menuitems = () =>
     {
       id: uniqueId(),
       title: "Knowledge spaces",
-      icon: QuizIcon,
+      icon: PsychologyAltIcon,
       href: "/knowledge_spaces",
     },
   ] as MenuitemsType[];

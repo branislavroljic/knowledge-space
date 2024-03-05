@@ -9,8 +9,8 @@ export type AssessmentTest = {
   id: number;
   name: string;
   completed: boolean;
-  total?: number;
-  correct?: number;
+  totalNumOfAnswers?: number;
+  numOfCorrectAnswers?: number;
 };
 
 export type Question = {
